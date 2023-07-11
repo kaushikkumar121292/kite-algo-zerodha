@@ -1,0 +1,17 @@
+expiry: 23713
+maximumRisk: 30.0
+#spring:
+#    data:
+#        mongodb:
+#            database: TradeStore
+#            host: localhost
+#            port: 27017
+
+
+
+spring:
+    data:
+        mongodb:
+            uri : mongodb+srv://kite:kite@cluster0.zgiaxhc.mongodb.net/?retryWrites=true&w=majority
+            database : TradeStore
+
