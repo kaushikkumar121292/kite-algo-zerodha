@@ -12,6 +12,6 @@ maximumRisk: 30.0
 spring:
     data:
         mongodb:
-            uri : mongodb+srv://kite:kite@cluster0.zgiaxhc.mongodb.net/?retryWrites=true&w=majority
+            uri : mongodb://kite:kite@ac-kyt3lxu-shard-00-00.zgiaxhc.mongodb.net:27017,ac-kyt3lxu-shard-00-01.zgiaxhc.mongodb.net:27017,ac-kyt3lxu-shard-00-02.zgiaxhc.mongodb.net:27017/?replicaSet=atlas-1b3jyw-shard-0&ssl=true&authSource=admin
             database : TradeStore
 
