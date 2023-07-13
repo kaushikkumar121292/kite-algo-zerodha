@@ -60,16 +60,12 @@ public class MarkTrafficLightScheduler {
         PriceData priceData=new PriceData();
         priceData.setLow(levels.get(0));
         priceData.setHigh(levels.get(levels.size()-1));
-        if (ltpService.getLtp() < priceData.getLow() || ltpService.getLtp() > priceData.getHigh()) {
+        Double ltp = ltpService.getLtp();
+        if (ltp < priceData.getLow() || ltp > priceData.getHigh()) {
             throw new IllegalArgumentException("Price is out of range, not marking any level");
         }
 
-        else if (!priceDataService.getLatestPriceData().hasBody()) {
-
             priceDataRepository.save(priceData);
-
-        }
-
 
     }
 
