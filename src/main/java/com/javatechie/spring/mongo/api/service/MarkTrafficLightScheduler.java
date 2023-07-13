@@ -73,8 +73,9 @@ public class MarkTrafficLightScheduler {
         Page<PriceData> page = priceDataRepository.findAll(pageable);
         if (page.hasContent()) {
             PriceData latestPriceDataFromDb = page.getContent().get(0);
-            if (latestPriceDataFromDb.getHigh() == priceData.getHigh() && latestPriceDataFromDb.getLow() == priceData.getLow())
+            if (latestPriceDataFromDb.getHigh() == priceData.getHigh() && latestPriceDataFromDb.getLow() == priceData.getLow()){
                 throw new Exception("same price data already exists in db");
+            }
         }
         priceDataRepository.save(priceData);
 
