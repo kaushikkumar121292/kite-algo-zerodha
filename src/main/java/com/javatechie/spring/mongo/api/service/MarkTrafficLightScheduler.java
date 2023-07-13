@@ -3,6 +3,10 @@ package com.javatechie.spring.mongo.api.service;
 import com.javatechie.spring.mongo.api.model.PriceData;
 import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -45,27 +49,34 @@ public class MarkTrafficLightScheduler {
         String DateFrom = "2023-07-03";
         LocalDate today = LocalDate.now(zoneId);
         String from = DateFrom + " " + timeFrom;
-        String to =today +" "+ LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String to = today + " " + LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         LocalTime currentTime = LocalTime.now(zoneId);
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
             throw new IllegalStateException("Marking level is only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
         }
-        if(tradeDetailsService.getLatestActiveTradeDetails()!=null ){
+        if (tradeDetailsService.getLatestActiveTradeDetails() != null) {
             throw new Exception("there is a ongoing trade!!!!");
         }
 
-        String data=historicalDataService.getHistoryDataOfInstrument(instrumentToken, from, to, interval);
+        String data = historicalDataService.getHistoryDataOfInstrument(instrumentToken, from, to, interval);
         List<Double> levels = extractHighLowFromJSONObjectService.getHighLowList(data);
         Collections.sort(levels);
-        PriceData priceData=new PriceData();
+        PriceData priceData = new PriceData();
         priceData.setLow(levels.get(0));
-        priceData.setHigh(levels.get(levels.size()-1));
+        priceData.setHigh(levels.get(levels.size() - 1));
         Double ltp = ltpService.getLtp();
         if (ltp < priceData.getLow() || ltp > priceData.getHigh()) {
             throw new IllegalArgumentException("Price is out of range, not marking any level");
         }
-
-            priceDataRepository.save(priceData);
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        Pageable pageable = PageRequest.of(0, 1, sort);
+        Page<PriceData> page = priceDataRepository.findAll(pageable);
+        if (page.hasContent()) {
+            PriceData latestPriceDataFromDb = page.getContent().get(0);
+            if (latestPriceDataFromDb.getHigh() == priceData.getHigh() && latestPriceDataFromDb.getLow() == priceData.getLow())
+                throw new Exception("same price data already exists in db");
+        }
+        priceDataRepository.save(priceData);
 
     }
 
