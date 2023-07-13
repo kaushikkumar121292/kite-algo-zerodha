@@ -1,12 +1,8 @@
 package com.javatechie.spring.mongo.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.javatechie.spring.mongo.api.model.PairData;
 import com.javatechie.spring.mongo.api.model.PriceData;
 import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +17,7 @@ import java.util.List;
 public class MarkTrafficLightScheduler {
 
 
-    public static final String INTERVAL = "60minute";
+    public static final String INTERVAL = "30minute";
     @Autowired
     private PriceDataRepository priceDataRepository;
 
