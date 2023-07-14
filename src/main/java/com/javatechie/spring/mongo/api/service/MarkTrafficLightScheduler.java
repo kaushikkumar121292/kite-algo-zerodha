@@ -60,7 +60,7 @@ public class MarkTrafficLightScheduler {
             throw new IllegalStateException("Marking level is only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
         }
         if (tradeDetailsService.getLatestActiveTradeDetails() != null) {
-            throw new Exception("there is a ongoing trade!!!!");
+            throw new Exception("there is an ongoing trade!!!!");
         }
 
         String data = historicalDataService.getHistoryDataOfInstrument(instrumentToken, from, to, interval);
@@ -97,6 +97,16 @@ public class MarkTrafficLightScheduler {
         } else {
             return null;
         }
+    }
+
+
+
+    @Scheduled(cron = "0 31 15 * * *", zone = "Asia/Kolkata")
+    public void executeTask() throws Exception {
+        if (tradeDetailsService.getLatestActiveTradeDetails() != null) {
+            throw new Exception("there is an ongoing trade!!!!");
+        }
+        priceDataService.deleteAllPriceData();
     }
 
 
