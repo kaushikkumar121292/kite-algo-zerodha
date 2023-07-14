@@ -1,5 +1,3 @@
-expiry: 23713
-maximumRisk: 30.0
 #spring:
 #    data:
 #        mongodb:

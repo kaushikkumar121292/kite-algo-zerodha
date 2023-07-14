@@ -3,9 +3,14 @@ package com.javatechie.spring.mongo.api.service;
 import com.javatechie.spring.mongo.api.model.OrderRequest;
 import com.javatechie.spring.mongo.api.model.PriceData;
 import com.javatechie.spring.mongo.api.model.TradeDetails;
+import com.javatechie.spring.mongo.api.model.UserDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -32,13 +37,11 @@ public class TradeInitiatorService {
     @Autowired
     private OrderService orderService;
 
-    @Value("${expiry}")
-    private String expiry;
-    @Value("${maximumRisk}")
-    private Double maximumRisk;
+    @Autowired
+    private  MongoTemplate mongoTemplate;
 
     @Order(3)
-    @Scheduled(fixedDelay = 1000) // Execute every 5 seconds
+    @Scheduled(fixedDelay = 1000) // Execute every 1 seconds
     public void initiateTrade() throws IOException, InterruptedException {
         double highValueMarkedLevel = getHighValue();
         double lowValueMarkedLevel = getLowValue();
@@ -81,8 +84,8 @@ public class TradeInitiatorService {
             leg1.setExchange("NFO");
             leg1.setOrderType("MARKET");
             leg1.setPrice("0");
-            leg1.setProduct("MIS");
-            leg1.setQuantity("50");
+            leg1.setProduct(getLatestCreatedUser().getProduct());
+            leg1.setQuantity(getLatestCreatedUser().getQuantity());
             leg1.setSquareoff("0");
             leg1.setStoploss("0");
             leg1.setTrailingStoploss("0");
@@ -90,15 +93,15 @@ public class TradeInitiatorService {
             leg1.setUserId(null);
             leg1.setValidity("DAY");
             leg1.setTransactionType("BUY");
-            leg1.setTradingSymbol("NIFTY" + expiry + (ATM - 200) + "PE");
+            leg1.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + (ATM - 200) + "PE");
 
             OrderRequest leg2 = new OrderRequest();
             leg2.setDisclosedQuantity("0");
             leg2.setExchange("NFO");
             leg2.setOrderType("MARKET");
             leg2.setPrice("0");
-            leg2.setProduct("MIS");
-            leg2.setQuantity("50");
+            leg2.setProduct(getLatestCreatedUser().getProduct());
+            leg2.setQuantity(getLatestCreatedUser().getQuantity());
             leg2.setSquareoff("0");
             leg2.setStoploss("0");
             leg2.setTrailingStoploss("0");
@@ -106,7 +109,7 @@ public class TradeInitiatorService {
             leg2.setUserId(null);
             leg2.setValidity("DAY");
             leg2.setTransactionType("SELL");
-            leg2.setTradingSymbol("NIFTY" + expiry + ATM + "PE");
+            leg2.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + ATM + "PE");
 
             orderRequests = new ArrayList<>();
             orderRequests.add(leg1);
@@ -117,8 +120,8 @@ public class TradeInitiatorService {
             leg1.setExchange("NFO");
             leg1.setOrderType("MARKET");
             leg1.setPrice("0");
-            leg1.setProduct("MIS");
-            leg1.setQuantity("50");
+            leg1.setProduct(getLatestCreatedUser().getProduct());
+            leg1.setQuantity(getLatestCreatedUser().getQuantity());
             leg1.setSquareoff("0");
             leg1.setStoploss("0");
             leg1.setTrailingStoploss("0");
@@ -126,15 +129,15 @@ public class TradeInitiatorService {
             leg1.setUserId(null);
             leg1.setValidity("DAY");
             leg1.setTransactionType("BUY");
-            leg1.setTradingSymbol("NIFTY" + expiry + (ATM + 200) + "CE");
+            leg1.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + (ATM + 200) + "CE");
 
             OrderRequest leg2 = new OrderRequest();
             leg2.setDisclosedQuantity("0");
             leg2.setExchange("NFO");
             leg2.setOrderType("MARKET");
             leg2.setPrice("0");
-            leg2.setProduct("MIS");
-            leg2.setQuantity("50");
+            leg2.setProduct(getLatestCreatedUser().getProduct());
+            leg2.setQuantity(getLatestCreatedUser().getQuantity());
             leg2.setSquareoff("0");
             leg2.setStoploss("0");
             leg2.setTrailingStoploss("0");
@@ -142,7 +145,7 @@ public class TradeInitiatorService {
             leg2.setUserId(null);
             leg2.setValidity("DAY");
             leg2.setTransactionType("SELL");
-            leg2.setTradingSymbol("NIFTY" + expiry + ATM + "CE");
+            leg2.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + ATM + "CE");
 
             orderRequests = new ArrayList<>();
             orderRequests.add(leg1);
@@ -159,8 +162,8 @@ public class TradeInitiatorService {
         tradeDetails.setEntry(entry);
         Double defaultRisk=highValueMarkedLevel-lowValueMarkedLevel;
         Double risk=defaultRisk;
-        if(defaultRisk>maximumRisk){
-            risk=maximumRisk;
+        if(defaultRisk>getLatestCreatedUser().getMaximumRisk()){
+            risk=getLatestCreatedUser().getMaximumRisk();
         }
         Double reward=risk*3;
         tradeDetails.setTarget(entry - reward);
@@ -178,8 +181,8 @@ public class TradeInitiatorService {
         tradeDetails.setEntry(entry);
         Double defaultRisk=highValueMarkedLevel-lowValueMarkedLevel;
         Double risk=defaultRisk;
-        if(defaultRisk>maximumRisk){
-            risk=maximumRisk;
+        if(defaultRisk>getLatestCreatedUser().getMaximumRisk()){
+            risk=getLatestCreatedUser().getMaximumRisk();
         }
         Double reward=risk*3;
         tradeDetails.setTarget(entry + reward);
@@ -213,5 +216,18 @@ public class TradeInitiatorService {
         }
         // Return a default value or handle the error case
         return null;
+    }
+
+
+    private UserDetail getLatestCreatedUser() {
+        List<UserDetail> userDetailList = mongoTemplate.find(
+                Query.query(new Criteria()).with(Sort.by(Sort.Direction.DESC, "createdDateTime")).limit(1),
+                UserDetail.class
+        );
+        if (!userDetailList.isEmpty()) {
+            return userDetailList.get(0);
+        } else {
+            return null;
+        }
     }
 }

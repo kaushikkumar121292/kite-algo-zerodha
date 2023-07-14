@@ -18,4 +18,8 @@ public class UserDetail {
     private String userId;
     private String encryptedToken;
     private LocalDateTime createdDateTime;
+    private String expiry;
+    private String quantity;
+    private Double maximumRisk;
+    private String product;
 }

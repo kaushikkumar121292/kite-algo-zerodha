@@ -52,4 +52,5 @@ public class AuthControllerKiteController {
             return ResponseEntity.notFound().build();
         }
     }
+
 }
