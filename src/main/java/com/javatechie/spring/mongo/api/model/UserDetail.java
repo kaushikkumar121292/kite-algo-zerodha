@@ -22,4 +22,5 @@ public class UserDetail {
     private String quantity;
     private Double maximumRisk;
     private String product;
+    private String interval;
 }

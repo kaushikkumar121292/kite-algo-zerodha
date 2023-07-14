@@ -1,12 +1,16 @@
 package com.javatechie.spring.mongo.api.service;
 
 import com.javatechie.spring.mongo.api.model.PriceData;
+import com.javatechie.spring.mongo.api.model.UserDetail;
 import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +24,6 @@ import java.util.List;
 @Service
 public class MarkTrafficLightScheduler {
 
-
-    public static final String INTERVAL = "30minute";
     @Autowired
     private PriceDataRepository priceDataRepository;
 
@@ -35,6 +37,9 @@ public class MarkTrafficLightScheduler {
     private TradeDetailsService tradeDetailsService;
 
     @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @Autowired
     private LtpService ltpService;
 
     @Autowired
@@ -44,7 +49,7 @@ public class MarkTrafficLightScheduler {
     public void markLevelByTrafficLight() throws Exception {
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
         String instrumentToken = "256265";
-        String interval = INTERVAL;
+        String interval = getLatestCreatedUser().getInterval();
         String timeFrom = "09:15:00";
         String DateFrom = "2023-07-03";
         LocalDate today = LocalDate.now(zoneId);
@@ -79,6 +84,19 @@ public class MarkTrafficLightScheduler {
         }
         priceDataRepository.save(priceData);
 
+    }
+
+
+    private UserDetail getLatestCreatedUser() {
+        List<UserDetail> userDetailList = mongoTemplate.find(
+                Query.query(new Criteria()).with(Sort.by(Sort.Direction.DESC, "createdDateTime")).limit(1),
+                UserDetail.class
+        );
+        if (!userDetailList.isEmpty()) {
+            return userDetailList.get(0);
+        } else {
+            return null;
+        }
     }
 
 
