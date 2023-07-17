@@ -24,13 +24,13 @@ public class TradeDetailsService {
         tradeDetailsRepository.save(tradeDetails);
     }
 
-    public TradeDetails getLatestActiveTradeDetails() {
+    public List<TradeDetails> getLatestActiveTradeDetails() {
         Query query = new Query(Criteria.where("status").is("ACTIVE"))
                 .with(Sort.by(Sort.Direction.DESC, "entry"))
                 .limit(1);
         List<TradeDetails> tradeDetailsList = mongoTemplate.find(query, TradeDetails.class);
         if (!tradeDetailsList.isEmpty()) {
-            return tradeDetailsList.get(0);
+            return tradeDetailsList;
         }
         return null;
     }

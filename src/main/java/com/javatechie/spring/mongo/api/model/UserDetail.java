@@ -16,6 +16,8 @@ public class UserDetail {
 
     @Id
     private String userId;
+    private String password;
+    private String twofa;
     private String encryptedToken;
     private LocalDateTime createdDateTime;
     private String expiry;

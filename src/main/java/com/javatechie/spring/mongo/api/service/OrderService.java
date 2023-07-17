@@ -27,15 +27,11 @@ public class OrderService {
     @Autowired
     private OrderRequestRepository orderRequestRepository;
 
-    public String placeOrder(OrderRequest orderRequest) throws IOException {
+    public String placeOrder(OrderRequest orderRequest, UserDetail user) throws IOException {
         String url = "https://api.kite.trade/orders/regular";
 
-        List<UserDetail> userDetailList = mongoTemplate.find(
-                Query.query(new Criteria()).with(Sort.by(Sort.Direction.DESC, "createdDateTime")).limit(1),
-                UserDetail.class
-        );
-        String encToken = userDetailList.get(0).getEncryptedToken();
-        orderRequest.setUserId(userDetailList.get(0).getUserId());
+        String encToken = user.getEncryptedToken();
+        orderRequest.setUserId(user.getUserId());
 
         // Set the form data from the request body
         String formData = "exchange=" + orderRequest.getExchange() +

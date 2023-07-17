@@ -2,6 +2,8 @@ package com.javatechie.spring.mongo.api.service;
 
 import com.javatechie.spring.mongo.api.model.OrderRequest;
 import com.javatechie.spring.mongo.api.model.TradeDetails;
+import com.javatechie.spring.mongo.api.model.UserDetail;
+import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,53 +27,72 @@ public class TradeTerminatorService {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private UserDetailRepository userDetailRepository;
+
+
     @Order(1)
     @Scheduled(fixedDelay = 1000)
     public void terminateTrades() throws IOException {
         Double ltp=ltpService.getLtp();
-        TradeDetails activeTrade = tradeDetailsService.getLatestActiveTradeDetails();
-        if (activeTrade != null && activeTrade.getPredictedTrend().equals("LONG")) {
-            if (ltp >= activeTrade.getTarget()) {
-                List<OrderRequest> orders = orderService.getOrders();
-                exitTrade(orders);
-                activeTrade.setStatus("TARGET");
-                tradeDetailsService.saveTradeDetails(activeTrade);
-                priceDataService.deleteAllPriceData();
-                System.out.println("Long trade hit the target. Trade ID: " + activeTrade.getTradeId());
-            } else if (ltp <= activeTrade.getStopLoss()) {
-                List<OrderRequest> orders = orderService.getOrders();
-                exitTrade(orders);
-                activeTrade.setStatus("STOPLOSS");
-                tradeDetailsService.saveTradeDetails(activeTrade);
-                priceDataService.deleteAllPriceData();
-                System.out.println("Long trade hit the stop loss. Trade ID: " + activeTrade.getTradeId());
+        List<TradeDetails> activeTrades = tradeDetailsService.getLatestActiveTradeDetails();
+        for (TradeDetails activeTrade :activeTrades) {
+            if (activeTrade != null && activeTrade.getPredictedTrend().equals("LONG")) {
+                if (ltp >= activeTrade.getTarget()) {
+                    try {
+                        List<OrderRequest> orders = activeTrade.getOrderRequests();
+                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        activeTrade.setStatus("TARGET");
+                        tradeDetailsService.saveTradeDetails(activeTrade);
+                        priceDataService.deleteAllPriceData();
+                        System.out.println("Long trade hit the target for User ID: " + activeTrade.getUserId());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                    }
+                } else if (ltp <= activeTrade.getStopLoss()) {
+                    try {
+                        List<OrderRequest> orders = orderService.getOrders();
+                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        activeTrade.setStatus("STOPLOSS");
+                        tradeDetailsService.saveTradeDetails(activeTrade);
+                        System.out.println("Long trade hit the stop loss. User ID: " + activeTrade.getUserId());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                    }
+                }
+            } else {
+                System.out.println("No active long trades found.");
             }
-        } else {
-            System.out.println("No active long trades found.");
-        }
 
-        if (activeTrade != null && activeTrade.getPredictedTrend().equals("SHORT")) {
-            if (ltp <= activeTrade.getTarget()) {
-                List<OrderRequest> orders = orderService.getOrders();
-                exitTrade(orders);
-                activeTrade.setStatus("TARGET");
-                tradeDetailsService.saveTradeDetails(activeTrade);
-                priceDataService.deleteAllPriceData();
-                System.out.println("Short trade hit the target. Trade ID: " + activeTrade.getTradeId());
-            } else if (ltp >= activeTrade.getStopLoss()) {
-                List<OrderRequest> orders = orderService.getOrders();
-                exitTrade(orders);
-                activeTrade.setStatus("STOPLOSS");
-                tradeDetailsService.saveTradeDetails(activeTrade);
-                priceDataService.deleteAllPriceData();
-                System.out.println("Short trade hit the stop loss. Trade ID: " + activeTrade.getTradeId());
+            if (activeTrade != null && activeTrade.getPredictedTrend().equals("SHORT")) {
+                if (ltp <= activeTrade.getTarget()) {
+                    try {
+                        List<OrderRequest> orders = orderService.getOrders();
+                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        activeTrade.setStatus("TARGET");
+                        tradeDetailsService.saveTradeDetails(activeTrade);
+                        System.out.println("Short trade hit the target. User ID: " + activeTrade.getUserId());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                    }
+                } else if (ltp >= activeTrade.getStopLoss()) {
+                    try {
+                        List<OrderRequest> orders = orderService.getOrders();
+                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        activeTrade.setStatus("STOPLOSS");
+                        tradeDetailsService.saveTradeDetails(activeTrade);
+                        System.out.println("Short trade hit the stop loss. User ID: " + activeTrade.getUserId());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                    }
+                }
+            } else {
+                System.out.println("No active short trades found.");
             }
-        } else {
-            System.out.println("No active short trades found.");
         }
     }
 
-    private void exitTrade(List<OrderRequest> orders) throws IOException {
+    private void exitTrade(List<OrderRequest> orders,UserDetail user) throws IOException {
         if (orders.size() >= 2) {
             OrderRequest orderRequest1 = orders.get(0);
             OrderRequest orderRequest2 = orders.get(1);
@@ -88,9 +109,8 @@ public class TradeTerminatorService {
                 orderRequest2.setTransactionType("BUY");
             }
 
-            orderService.placeOrder(orderRequest1);
-            orderService.placeOrder(orderRequest2);
-            orderService.deleteALLOrders();
+            orderService.placeOrder(orderRequest1, user);
+            orderService.placeOrder(orderRequest2, user);
         } else {
             System.out.println("Insufficient number of orders to exit the trade.");
         }

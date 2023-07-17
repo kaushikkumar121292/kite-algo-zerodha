@@ -160,7 +160,7 @@ public class TradeDetailController {
     @PostMapping("/place-order")
     public ResponseEntity<String> placeOrder(@RequestBody OrderRequest orderRequest) {
         try {
-            String response = orderService.placeOrder(orderRequest);
+            String response = orderService.placeOrder(orderRequest, userDetailRepository.findById(orderRequest.getUserId()).get());
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>("Failed to place order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

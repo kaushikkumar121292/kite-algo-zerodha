@@ -4,6 +4,7 @@ import com.javatechie.spring.mongo.api.model.OrderRequest;
 import com.javatechie.spring.mongo.api.model.PriceData;
 import com.javatechie.spring.mongo.api.model.TradeDetails;
 import com.javatechie.spring.mongo.api.model.UserDetail;
+import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
@@ -40,6 +41,9 @@ public class TradeInitiatorService {
     @Autowired
     private  MongoTemplate mongoTemplate;
 
+    @Autowired
+    private UserDetailRepository userDetailRepository;
+
     @Order(3)
     @Scheduled(fixedDelay = 1000) // Execute every 1 seconds
     public void initiateTrade() throws IOException, InterruptedException {
@@ -52,20 +56,40 @@ public class TradeInitiatorService {
             String flag = null;
             if (ltp > highValueMarkedLevel && tradeDetailsService.getLatestActiveTradeDetails() == null) {
                 flag = "BULLISH";
-                // Initiate long trade (placeOrder long order)
-                List<OrderRequest> orderRequests = getOrderRequest(ltp, flag);
-                orderService.placeOrder(orderRequests.get(0)); // Place the buy leg order
-                orderService.placeOrder(orderRequests.get(1)); // Place the sell leg order
-                setTargetAndStopLossForLong(highValueMarkedLevel,lowValueMarkedLevel);
-                orderService.saveAll(orderRequests);
+                // Initiate long trade (placeOrder long order) for all user
+
+                List<UserDetail> users = getAllUser();
+
+
+                for (UserDetail user : users) {
+                    List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
+                    try {
+                        orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
+                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
+                        setTargetAndStopLossForLong(highValueMarkedLevel, lowValueMarkedLevel,user, orderRequests);
+                        orderService.saveAll(orderRequests);
+                    } catch (IOException e) {
+                        throw new RuntimeException(" Error while placing order for user : " +user.getUserId());
+                    }
+
+                }
+
+
             } else if (ltp < lowValueMarkedLevel && tradeDetailsService.getLatestActiveTradeDetails() == null) {
                 flag = "BEARISH";
-                // Initiate short trade(place short order)
-                List<OrderRequest> orderRequests = getOrderRequest(ltp, flag);
-                orderService.placeOrder(orderRequests.get(0)); // Place the buy leg order
-                orderService.placeOrder(orderRequests.get(1)); // Place the sell leg order
-                setTargetAndSLforShort(highValueMarkedLevel,lowValueMarkedLevel);
-                orderService.saveAll(orderRequests);
+                List<UserDetail> users = getAllUser();
+                // Initiate short trade(place short order) for all user
+                for (UserDetail user : users) {
+                    try {
+                        List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
+                        orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
+                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
+                        setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user,orderRequests);
+                        orderService.saveAll(orderRequests);
+                    } catch (IOException e) {
+                        throw new RuntimeException(" Error while placing order for user : " +user.getUserId());
+                    }
+                }
             } else {
                 System.out.println("No trade opportunity found.");
             }
@@ -75,7 +99,7 @@ public class TradeInitiatorService {
     }
 
 
-    private List<OrderRequest> getOrderRequest(Double spotPrice, String flag) {
+    private List<OrderRequest> getOrderRequest(Double spotPrice, String flag, UserDetail user) {
         int ATM = (int) (Math.round(spotPrice / 50) * 50);
         List<OrderRequest> orderRequests = null;
         if (flag.equalsIgnoreCase("BULLISH")) {
@@ -84,8 +108,8 @@ public class TradeInitiatorService {
             leg1.setExchange("NFO");
             leg1.setOrderType("MARKET");
             leg1.setPrice("0");
-            leg1.setProduct(getLatestCreatedUser().getProduct());
-            leg1.setQuantity(getLatestCreatedUser().getQuantity());
+            leg1.setProduct(user.getProduct());
+            leg1.setQuantity(user.getQuantity());
             leg1.setSquareoff("0");
             leg1.setStoploss("0");
             leg1.setTrailingStoploss("0");
@@ -93,15 +117,15 @@ public class TradeInitiatorService {
             leg1.setUserId(null);
             leg1.setValidity("DAY");
             leg1.setTransactionType("BUY");
-            leg1.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + (ATM - 200) + "PE");
+            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM - 200) + "PE");
 
             OrderRequest leg2 = new OrderRequest();
             leg2.setDisclosedQuantity("0");
             leg2.setExchange("NFO");
             leg2.setOrderType("MARKET");
             leg2.setPrice("0");
-            leg2.setProduct(getLatestCreatedUser().getProduct());
-            leg2.setQuantity(getLatestCreatedUser().getQuantity());
+            leg2.setProduct(user.getProduct());
+            leg2.setQuantity(user.getQuantity());
             leg2.setSquareoff("0");
             leg2.setStoploss("0");
             leg2.setTrailingStoploss("0");
@@ -109,7 +133,7 @@ public class TradeInitiatorService {
             leg2.setUserId(null);
             leg2.setValidity("DAY");
             leg2.setTransactionType("SELL");
-            leg2.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + ATM + "PE");
+            leg2.setTradingSymbol("NIFTY" + user.getExpiry() + ATM + "PE");
 
             orderRequests = new ArrayList<>();
             orderRequests.add(leg1);
@@ -120,8 +144,8 @@ public class TradeInitiatorService {
             leg1.setExchange("NFO");
             leg1.setOrderType("MARKET");
             leg1.setPrice("0");
-            leg1.setProduct(getLatestCreatedUser().getProduct());
-            leg1.setQuantity(getLatestCreatedUser().getQuantity());
+            leg1.setProduct(user.getProduct());
+            leg1.setQuantity(user.getQuantity());
             leg1.setSquareoff("0");
             leg1.setStoploss("0");
             leg1.setTrailingStoploss("0");
@@ -129,15 +153,15 @@ public class TradeInitiatorService {
             leg1.setUserId(null);
             leg1.setValidity("DAY");
             leg1.setTransactionType("BUY");
-            leg1.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + (ATM + 200) + "CE");
+            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM + 200) + "CE");
 
             OrderRequest leg2 = new OrderRequest();
             leg2.setDisclosedQuantity("0");
             leg2.setExchange("NFO");
             leg2.setOrderType("MARKET");
             leg2.setPrice("0");
-            leg2.setProduct(getLatestCreatedUser().getProduct());
-            leg2.setQuantity(getLatestCreatedUser().getQuantity());
+            leg2.setProduct(user.getProduct());
+            leg2.setQuantity(user.getQuantity());
             leg2.setSquareoff("0");
             leg2.setStoploss("0");
             leg2.setTrailingStoploss("0");
@@ -145,7 +169,7 @@ public class TradeInitiatorService {
             leg2.setUserId(null);
             leg2.setValidity("DAY");
             leg2.setTransactionType("SELL");
-            leg2.setTradingSymbol("NIFTY" + getLatestCreatedUser().getExpiry() + ATM + "CE");
+            leg2.setTradingSymbol("NIFTY" + user.getExpiry() + ATM + "CE");
 
             orderRequests = new ArrayList<>();
             orderRequests.add(leg1);
@@ -156,14 +180,14 @@ public class TradeInitiatorService {
     }
 
 
-    private void setTargetAndSLforShort(Double highValueMarkedLevel,Double lowValueMarkedLevel) throws IOException {
+    private void setTargetAndSLforShort(Double highValueMarkedLevel,Double lowValueMarkedLevel, UserDetail user, List<OrderRequest> orderRequests) throws IOException {
         Double entry = ltpService.getLtp();
         TradeDetails tradeDetails = new TradeDetails();
         tradeDetails.setEntry(entry);
         Double defaultRisk=highValueMarkedLevel-lowValueMarkedLevel;
         Double risk=defaultRisk;
-        if(defaultRisk>getLatestCreatedUser().getMaximumRisk()){
-            risk=getLatestCreatedUser().getMaximumRisk();
+        if(defaultRisk>user.getMaximumRisk()){
+            risk=user.getMaximumRisk();
         }
         Double reward=risk*3;
         tradeDetails.setTarget(entry - reward);
@@ -172,17 +196,19 @@ public class TradeInitiatorService {
         tradeDetails.setPredictedTrend("SHORT");
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
         tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
+        tradeDetails.setUserId(user.getUserId());
+        tradeDetails.setOrderRequests(orderRequests);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 
-    private void setTargetAndStopLossForLong(Double highValueMarkedLevel,Double lowValueMarkedLevel)  throws IOException {
+    private void setTargetAndStopLossForLong(Double highValueMarkedLevel,Double lowValueMarkedLevel, UserDetail user, List<OrderRequest> orderRequests)  throws IOException {
         Double entry = ltpService.getLtp();
         TradeDetails tradeDetails = new TradeDetails();
         tradeDetails.setEntry(entry);
         Double defaultRisk=highValueMarkedLevel-lowValueMarkedLevel;
         Double risk=defaultRisk;
-        if(defaultRisk>getLatestCreatedUser().getMaximumRisk()){
-            risk=getLatestCreatedUser().getMaximumRisk();
+        if(defaultRisk>user.getMaximumRisk()){
+            risk=user.getMaximumRisk();
         }
         Double reward=risk*3;
         tradeDetails.setTarget(entry + reward);
@@ -191,6 +217,8 @@ public class TradeInitiatorService {
         tradeDetails.setPredictedTrend("LONG");
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
         tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
+        tradeDetails.setUserId(user.getUserId());
+        tradeDetails.setOrderRequests(orderRequests);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 
@@ -219,13 +247,10 @@ public class TradeInitiatorService {
     }
 
 
-    private UserDetail getLatestCreatedUser() {
-        List<UserDetail> userDetailList = mongoTemplate.find(
-                Query.query(new Criteria()).with(Sort.by(Sort.Direction.DESC, "createdDateTime")).limit(1),
-                UserDetail.class
-        );
+    private List<UserDetail> getAllUser() {
+        List<UserDetail> userDetailList = userDetailRepository.findAll();
         if (!userDetailList.isEmpty()) {
-            return userDetailList.get(0);
+            return userDetailList;
         } else {
             return null;
         }

@@ -5,6 +5,8 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Data
 @ToString
 @AllArgsConstructor
@@ -20,4 +22,7 @@ public class TradeDetails {
 	private String status;
 	private String dateTime;
 	private String predictedTrend;
+	private List<OrderRequest> orderRequests;
+	private String userId;
+
 }
