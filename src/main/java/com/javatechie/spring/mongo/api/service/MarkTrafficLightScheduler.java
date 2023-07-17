@@ -59,7 +59,7 @@ public class MarkTrafficLightScheduler {
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
             throw new IllegalStateException("Marking level is only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
         }
-        if (tradeDetailsService.getLatestActiveTradeDetails().size()!=0) {
+        if (tradeDetailsService.getLatestActiveTradeDetails()!=null) {
             throw new Exception("there is an ongoing trade!!!!");
         }
 

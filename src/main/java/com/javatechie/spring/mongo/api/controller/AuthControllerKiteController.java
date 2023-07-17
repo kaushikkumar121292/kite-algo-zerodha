@@ -144,7 +144,7 @@ public class AuthControllerKiteController {
             String cookieHeader = twofaConnection.getHeaderField("Set-Cookie");
             String enctoken = extractEnctokenFromCookie(cookieHeader);
             if (enctoken != null) {
-                return "enctoken: " + enctoken;
+                return enctoken;
             } else {
                 throw new Exception("Enter valid details !!!!");
             }
