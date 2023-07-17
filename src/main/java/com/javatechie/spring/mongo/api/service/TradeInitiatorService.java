@@ -57,10 +57,7 @@ public class TradeInitiatorService {
             if (ltp > highValueMarkedLevel && tradeDetailsService.getLatestActiveTradeDetails() == null) {
                 flag = "BULLISH";
                 // Initiate long trade (placeOrder long order) for all user
-
                 List<UserDetail> users = getAllUser();
-
-
                 for (UserDetail user : users) {
                     List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
                     try {
@@ -117,7 +114,7 @@ public class TradeInitiatorService {
             leg1.setUserId(null);
             leg1.setValidity("DAY");
             leg1.setTransactionType("BUY");
-            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM - 200) + "PE");
+            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM - 250) + "PE");
 
             OrderRequest leg2 = new OrderRequest();
             leg2.setDisclosedQuantity("0");
@@ -133,7 +130,7 @@ public class TradeInitiatorService {
             leg2.setUserId(null);
             leg2.setValidity("DAY");
             leg2.setTransactionType("SELL");
-            leg2.setTradingSymbol("NIFTY" + user.getExpiry() + ATM + "PE");
+            leg2.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM+50) + "PE");
 
             orderRequests = new ArrayList<>();
             orderRequests.add(leg1);
@@ -153,7 +150,7 @@ public class TradeInitiatorService {
             leg1.setUserId(null);
             leg1.setValidity("DAY");
             leg1.setTransactionType("BUY");
-            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM + 200) + "CE");
+            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM + 250) + "CE");
 
             OrderRequest leg2 = new OrderRequest();
             leg2.setDisclosedQuantity("0");
@@ -169,7 +166,7 @@ public class TradeInitiatorService {
             leg2.setUserId(null);
             leg2.setValidity("DAY");
             leg2.setTransactionType("SELL");
-            leg2.setTradingSymbol("NIFTY" + user.getExpiry() + ATM + "CE");
+            leg2.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM-50) + "CE");
 
             orderRequests = new ArrayList<>();
             orderRequests.add(leg1);
