@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TradeTerminatorService {
@@ -41,7 +42,7 @@ public class TradeTerminatorService {
                 if (ltp >= activeTrade.getTarget()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        exitTrade(orders);
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         System.out.println("Long trade hit the target for User ID: " + activeTrade.getUserId());
@@ -51,7 +52,7 @@ public class TradeTerminatorService {
                 } else if (ltp <= activeTrade.getStopLoss()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        exitTrade(orders);
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         System.out.println("Long trade hit the stop loss. User ID: " + activeTrade.getUserId());
@@ -67,7 +68,7 @@ public class TradeTerminatorService {
                 if (ltp <= activeTrade.getTarget()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        exitTrade(orders);
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         System.out.println("Short trade hit the target. User ID: " + activeTrade.getUserId());
@@ -77,7 +78,7 @@ public class TradeTerminatorService {
                 } else if (ltp >= activeTrade.getStopLoss()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
+                        exitTrade(orders);
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         System.out.println("Short trade hit the stop loss. User ID: " + activeTrade.getUserId());
@@ -91,7 +92,7 @@ public class TradeTerminatorService {
         }
     }
 
-    private void exitTrade(List<OrderRequest> orders,UserDetail user) throws IOException {
+    private void exitTrade(List<OrderRequest> orders) throws IOException {
         if (orders.size() >= 2) {
             OrderRequest orderRequest1 = orders.get(0);
             OrderRequest orderRequest2 = orders.get(1);
@@ -107,6 +108,9 @@ public class TradeTerminatorService {
             } else if (orderRequest2.getTransactionType().equalsIgnoreCase("SELL")) {
                 orderRequest2.setTransactionType("BUY");
             }
+
+
+            UserDetail user = userDetailRepository.findById(orderRequest1.getUserId()).get();
 
             orderService.placeOrder(orderRequest1, user);
             orderService.placeOrder(orderRequest2, user);
