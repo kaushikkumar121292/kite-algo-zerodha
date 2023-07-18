@@ -44,14 +44,13 @@ public class TradeTerminatorService {
                         exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
-                        priceDataService.deleteAllPriceData();
                         System.out.println("Long trade hit the target for User ID: " + activeTrade.getUserId());
                     } catch (IOException e) {
                         throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
                     }
                 } else if (ltp <= activeTrade.getStopLoss()) {
                     try {
-                        List<OrderRequest> orders = orderService.getOrders();
+                        List<OrderRequest> orders = activeTrade.getOrderRequests();
                         exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
@@ -67,7 +66,7 @@ public class TradeTerminatorService {
             if (activeTrade != null && activeTrade.getPredictedTrend().equals("SHORT")) {
                 if (ltp <= activeTrade.getTarget()) {
                     try {
-                        List<OrderRequest> orders = orderService.getOrders();
+                        List<OrderRequest> orders = activeTrade.getOrderRequests();
                         exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
@@ -77,7 +76,7 @@ public class TradeTerminatorService {
                     }
                 } else if (ltp >= activeTrade.getStopLoss()) {
                     try {
-                        List<OrderRequest> orders = orderService.getOrders();
+                        List<OrderRequest> orders = activeTrade.getOrderRequests();
                         exitTrade(orders, userDetailRepository.findById(activeTrade.getUserId()).get());
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
