@@ -24,6 +24,7 @@ import java.util.List;
 @Service
 public class MarkTrafficLightScheduler {
 
+    public static final String IJ_6185 = "IJ6185";
     @Autowired
     private PriceDataRepository priceDataRepository;
 
@@ -49,7 +50,7 @@ public class MarkTrafficLightScheduler {
     public void markLevelByTrafficLight() throws Exception {
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
         String instrumentToken = "256265";
-        String interval = getLatestCreatedUser().getInterval();
+        String interval = getMasterUser().getInterval();
         String timeFrom = "09:15:00";
         String DateFrom = "2023-07-03";
         LocalDate today = LocalDate.now(zoneId);
@@ -86,20 +87,11 @@ public class MarkTrafficLightScheduler {
 
     }
 
-
-    private UserDetail getLatestCreatedUser() {
-        List<UserDetail> userDetailList = mongoTemplate.find(
-                Query.query(new Criteria()).with(Sort.by(Sort.Direction.DESC, "createdDateTime")).limit(1),
-                UserDetail.class
-        );
-        if (!userDetailList.isEmpty()) {
-            return userDetailList.get(0);
-        } else {
-            return null;
-        }
+    private UserDetail getMasterUser() {
+        Query query = Query.query(Criteria.where("userId").is(IJ_6185));
+        UserDetail userDetail = mongoTemplate.findOne(query, UserDetail.class);
+        return userDetail;
     }
-
-
 
     @Scheduled(cron = "0 31 15 * * *", zone = "Asia/Kolkata")
     public void executeTask() throws Exception {

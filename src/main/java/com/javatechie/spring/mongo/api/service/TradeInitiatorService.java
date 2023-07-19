@@ -64,7 +64,6 @@ public class TradeInitiatorService {
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
                         orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
                         setTargetAndStopLossForLong(highValueMarkedLevel, lowValueMarkedLevel,user, orderRequests);
-                        orderService.saveAll(orderRequests);
                     } catch (IOException e) {
                         throw new RuntimeException(" Error while placing order for user : " +user.getUserId());
                     }
@@ -82,7 +81,6 @@ public class TradeInitiatorService {
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
                         orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
                         setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user,orderRequests);
-                        orderService.saveAll(orderRequests);
                     } catch (IOException e) {
                         throw new RuntimeException(" Error while placing order for user : " +user.getUserId());
                     }

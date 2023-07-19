@@ -77,11 +77,6 @@ public class OrderService {
     }
 
     @Transactional
-    public void saveAll(List<OrderRequest> orderRequests) {
-        orderRequestRepository.saveAll(orderRequests);
-    }
-
-    @Transactional
     public List<OrderRequest> getOrders() {
         return orderRequestRepository.findAll();
     }
