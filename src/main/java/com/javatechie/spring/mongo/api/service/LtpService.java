@@ -22,6 +22,7 @@ import java.util.Map;
 @Service
 public class LtpService {
 
+    public static final String IJ_6185 = "IJ6185";
     private final String rootUrl = "https://api.kite.trade";
     private final Gson gson = new Gson();
 
@@ -62,11 +63,9 @@ public class LtpService {
 
     private Map<String, String> getHeadersWithEnctoken() {
         Map<String, String> headers = new HashMap<>();
-        List<UserDetail> userDetailList = mongoTemplate.find(
-                Query.query(new Criteria()).with(Sort.by(Sort.Direction.DESC, "createdDateTime")).limit(1),
-                UserDetail.class
-        );
-        headers.put("Authorization", "enctoken " + userDetailList.get(0).getEncryptedToken());
+        Query query = Query.query(Criteria.where("userId").is(IJ_6185));
+        UserDetail userDetail = mongoTemplate.findOne(query, UserDetail.class);
+        headers.put("Authorization", "enctoken " + userDetail.getEncryptedToken());
         return headers;
     }
 }
