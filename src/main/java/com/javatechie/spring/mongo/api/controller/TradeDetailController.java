@@ -167,11 +167,6 @@ public class TradeDetailController {
         }
     }
 
-    @PostMapping("/save-orders")
-    public ResponseEntity<String> saveOrder(@RequestBody List<OrderRequest> orderRequests) {
-        orderService.saveAll(orderRequests);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
     @GetMapping("/fetch-order")
     public ResponseEntity<List<OrderRequest>> fetchOrder() {

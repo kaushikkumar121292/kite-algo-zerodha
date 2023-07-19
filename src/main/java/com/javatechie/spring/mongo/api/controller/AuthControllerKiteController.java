@@ -45,14 +45,19 @@ public class AuthControllerKiteController {
         this.mongoTemplate = mongoTemplate;
     }
 
-    @PostMapping("/users")
-    public UserDetail createUserDetail(@RequestBody UserDetail userDetail) {
-
+    @PostMapping("/create-user-by-login")
+    public UserDetail createUserByLogin(@RequestBody UserDetail userDetail) {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setPassword(userDetail.getPassword());
         loginRequest.setTwofa(userDetail.getTwofa());
         loginRequest.setUserid(userDetail.getUserId());
         userDetail.setEncryptedToken(login(loginRequest));
+        userDetail.setCreatedDateTime(LocalDateTime.now());
+        return userDetailRepository.save(userDetail);
+    }
+
+    @PostMapping("/create-user-by-token")
+    public UserDetail createUserByToken(@RequestBody UserDetail userDetail) {
         userDetail.setCreatedDateTime(LocalDateTime.now());
         return userDetailRepository.save(userDetail);
     }
