@@ -14,14 +14,11 @@ import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.var;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,14 +43,23 @@ public class AuthControllerKiteController {
     }
 
     @PostMapping("/create-user-by-login")
-    public UserDetail createUserByLogin(@RequestBody UserDetail userDetail) {
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setPassword(userDetail.getPassword());
-        loginRequest.setTwofa(userDetail.getTwofa());
-        loginRequest.setUserid(userDetail.getUserId());
-        userDetail.setEncryptedToken(login(loginRequest));
-        userDetail.setCreatedDateTime(LocalDateTime.now());
-        return userDetailRepository.save(userDetail);
+    public ResponseEntity<UserDetail> createUserByLogin(@RequestBody LoginRequest loginRequest) {
+        UserDetail user = new UserDetail();
+        user.setEncryptedToken(login(loginRequest));
+        user.setCreatedDateTime(LocalDateTime.now());
+        user.setUserId(loginRequest.getUserid());
+        user.setPassword(loginRequest.getPassword());
+        user.setTwofa(loginRequest.getTwofa());
+
+        UserDetail createdUser = userDetailRepository.save(user);
+
+        // Set the URI for the newly created user in the response headers
+        String uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdUser.getUserId()) // Assuming you have a getId() method in UserDetail class
+                .toUriString();
+
+        return ResponseEntity.created(URI.create(uri)).body(createdUser);
     }
 
     @PostMapping("/create-user-by-token")
