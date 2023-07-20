@@ -11,10 +11,13 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class TradeTerminatorService {
+
+    private static final Logger logger = Logger.getLogger(TradeTerminatorService.class.getName());
 
     @Autowired
     private TradeDetailsService tradeDetailsService;
@@ -45,9 +48,9 @@ public class TradeTerminatorService {
                         exitTrade(orders);
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
-                        System.out.println("Long trade hit the target for User ID: " + activeTrade.getUserId());
+                        logger.log(Level.INFO, "Long trade hit the target for User ID: {0}", activeTrade.getUserId());
                     } catch (IOException e) {
-                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                        logger.log(Level.SEVERE, "Error while exiting the trade for User Id: {0}", activeTrade.getUserId());
                     }
                 } else if (ltp <= activeTrade.getStopLoss()) {
                     try {
@@ -55,13 +58,13 @@ public class TradeTerminatorService {
                         exitTrade(orders);
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
-                        System.out.println("Long trade hit the stop loss. User ID: " + activeTrade.getUserId());
+                        logger.log(Level.INFO, "Long trade hit the stop loss. User ID: {0}", activeTrade.getUserId());
                     } catch (IOException e) {
-                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                        logger.log(Level.SEVERE, "Error while exiting the trade for User Id: {0}", activeTrade.getUserId());
                     }
                 }
             } else {
-                System.out.println("No active long trades found.");
+                logger.log(Level.INFO, "No active long trades found.");
             }
 
             if (activeTrade != null && activeTrade.getPredictedTrend().equals("SHORT")) {
@@ -71,9 +74,9 @@ public class TradeTerminatorService {
                         exitTrade(orders);
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
-                        System.out.println("Short trade hit the target. User ID: " + activeTrade.getUserId());
+                        logger.log(Level.INFO, "Short trade hit the target. User ID: {0}", activeTrade.getUserId());
                     } catch (IOException e) {
-                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                        logger.log(Level.SEVERE, "Error while exiting the trade for User Id: {0}", activeTrade.getUserId());
                     }
                 } else if (ltp >= activeTrade.getStopLoss()) {
                     try {
@@ -81,13 +84,13 @@ public class TradeTerminatorService {
                         exitTrade(orders);
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
-                        System.out.println("Short trade hit the stop loss. User ID: " + activeTrade.getUserId());
+                        logger.log(Level.INFO, "Short trade hit the stop loss. User ID: {0}", activeTrade.getUserId());
                     } catch (IOException e) {
-                        throw new RuntimeException("Error while exiting the trade for User Id: " +activeTrade.getUserId());
+                        logger.log(Level.SEVERE, "Error while exiting the trade for User Id: {0}", activeTrade.getUserId());
                     }
                 }
             } else {
-                System.out.println("No active short trades found.");
+                logger.log(Level.INFO, "No active short trades found.");
             }
         }
     }
@@ -115,9 +118,8 @@ public class TradeTerminatorService {
             orderService.placeOrder(orderRequest1, user);
             orderService.placeOrder(orderRequest2, user);
         } else {
-            System.out.println("Insufficient number of orders to exit the trade.");
+            logger.log(Level.WARNING, "Insufficient number of orders to exit the trade.");
         }
     }
 
 }
-

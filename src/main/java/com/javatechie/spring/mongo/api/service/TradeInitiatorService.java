@@ -6,12 +6,8 @@ import com.javatechie.spring.mongo.api.model.TradeDetails;
 import com.javatechie.spring.mongo.api.model.UserDetail;
 import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +16,15 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 public class TradeInitiatorService {
+
+    private static final Logger logger = Logger.getLogger(TradeInitiatorService.class.getName());
 
     @Autowired
     private PriceDataService priceDataService;
@@ -44,7 +44,7 @@ public class TradeInitiatorService {
     @Autowired
     private UserDetailRepository userDetailRepository;
 
-    @Order(3)
+    @Order(2)
     @Scheduled(fixedDelay = 1000) // Execute every 1 seconds
     public void initiateTrade() throws IOException, InterruptedException {
         double highValueMarkedLevel = getHighValue();
@@ -59,18 +59,16 @@ public class TradeInitiatorService {
                 // Initiate long trade (placeOrder long order) for all user
                 List<UserDetail> users = getAllUser();
                 for (UserDetail user : users) {
-                    List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
                     try {
+                        List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
                         orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
-                        setTargetAndStopLossForLong(highValueMarkedLevel, lowValueMarkedLevel,user, orderRequests);
+                        setTargetAndStopLossForLong(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
+                        logger.log(Level.INFO, "Trade details for user {0} set for LONG.", user.getUserId());
                     } catch (IOException e) {
-                        throw new RuntimeException(" Error while placing order for user : " +user.getUserId());
+                        logger.log(Level.SEVERE, "Error while placing order for user : {0}", user.getUserId());
                     }
-
                 }
-
-
             } else if (ltp < lowValueMarkedLevel && tradeDetailsService.getLatestActiveTradeDetails() == null) {
                 flag = "BEARISH";
                 List<UserDetail> users = getAllUser();
@@ -80,19 +78,19 @@ public class TradeInitiatorService {
                         List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
                         orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
-                        setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user,orderRequests);
+                        setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
+                        logger.log(Level.INFO, "Trade details for user {0} set for SHORT.", user.getUserId());
                     } catch (IOException e) {
-                        throw new RuntimeException(" Error while placing order for user : " +user.getUserId());
+                        logger.log(Level.SEVERE, "Error while placing order for user : {0}", user.getUserId());
                     }
                 }
             } else {
-                System.out.println("No trade opportunity found.");
+                logger.log(Level.INFO, "No trade opportunity found.");
             }
         } else {
-            System.out.println("Level not yet marked by user.");
+            logger.log(Level.INFO, "Level not yet marked by user.");
         }
     }
-
 
     private List<OrderRequest> getOrderRequest(Double spotPrice, String flag, UserDetail user) {
         int ATM = (int) (Math.round(spotPrice / 50) * 50);
