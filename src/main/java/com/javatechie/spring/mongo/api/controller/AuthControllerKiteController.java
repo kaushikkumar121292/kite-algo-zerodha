@@ -44,7 +44,11 @@ public class AuthControllerKiteController {
 
     @PostMapping("/create-user-by-login")
     public ResponseEntity<UserDetail> createUserByLogin(@RequestBody LoginRequest loginRequest) {
-        UserDetail user = new UserDetail();
+        UserDetail user=null;
+        user = userDetailRepository.findById(loginRequest.getUserid()).get();
+        if(user==null){
+            user=new UserDetail();
+        }
         user.setEncryptedToken(login(loginRequest));
         user.setCreatedDateTime(LocalDateTime.now());
         user.setUserId(loginRequest.getUserid());
