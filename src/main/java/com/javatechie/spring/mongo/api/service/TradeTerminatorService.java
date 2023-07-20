@@ -117,6 +117,7 @@ public class TradeTerminatorService {
 
             orderService.placeOrder(orderRequest1, user);
             orderService.placeOrder(orderRequest2, user);
+            priceDataService.deleteAllPriceData();
         } else {
             logger.log(Level.WARNING, "Insufficient number of orders to exit the trade.");
         }
