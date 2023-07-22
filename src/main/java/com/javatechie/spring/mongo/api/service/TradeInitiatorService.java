@@ -200,7 +200,7 @@ public class TradeInitiatorService {
         tradeDetails.setEntry(entry);
         Double defaultRisk=highValueMarkedLevel-lowValueMarkedLevel;
         Double risk=defaultRisk;
-        if(defaultRisk>user.getMaximumRisk()){
+        if(user.getMaximumRisk()!=0 && defaultRisk>user.getMaximumRisk() ){
             risk=user.getMaximumRisk();
         }
         Double reward=risk*3;
