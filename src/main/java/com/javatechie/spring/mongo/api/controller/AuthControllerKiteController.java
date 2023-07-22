@@ -1,6 +1,7 @@
 package com.javatechie.spring.mongo.api.controller;
 
 import com.javatechie.spring.mongo.api.model.LoginRequest;
+import com.javatechie.spring.mongo.api.model.UserUpdateRequest;
 import io.swagger.annotations.Api;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -78,7 +79,6 @@ public class AuthControllerKiteController {
         return optionalUserDetail.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
     @GetMapping("/latest-added-user")
     public ResponseEntity<UserDetail> getLatestCreatedUser() {
         List<UserDetail> userDetailList = mongoTemplate.find(
@@ -170,6 +170,29 @@ public class AuthControllerKiteController {
             return "Error: " + e.getMessage();
         }
     }
+
+
+    @PutMapping("/update-user/{userId}")
+    public ResponseEntity<UserDetail> updateUserDetail(@PathVariable String userId, @RequestBody UserUpdateRequest userUpdateRequest) {
+        // Check if the user with the given userId exists in the database
+        Optional<UserDetail> optionalUserDetail = userDetailRepository.findById(userId);
+        if (optionalUserDetail.isPresent()) {
+            UserDetail existingUser = optionalUserDetail.get();
+            // Update the fields that are allowed to be updated
+            existingUser.setInterval(userUpdateRequest.getInterval());
+            existingUser.setQuantity(userUpdateRequest.getQuantity());
+            existingUser.setMaximumRisk(userUpdateRequest.getMaximumRisk());
+            existingUser.setProduct(userUpdateRequest.getProduct());
+            existingUser.setExpiry(userUpdateRequest.getExpiry());
+            // Save the updated user details
+            UserDetail updatedUser = userDetailRepository.save(existingUser);
+            return ResponseEntity.ok(updatedUser);
+        } else {
+            // If the user with the given userId is not found, return a not found response
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
     private static String extractEnctokenFromCookie(String cookieHeader) {
         if (cookieHeader != null) {
