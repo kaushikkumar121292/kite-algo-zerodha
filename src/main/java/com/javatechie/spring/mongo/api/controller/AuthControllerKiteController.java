@@ -46,7 +46,11 @@ public class AuthControllerKiteController {
     @PostMapping("/create-user-by-login")
     public ResponseEntity<UserDetail> createUserByLogin(@RequestBody LoginRequest loginRequest) {
         UserDetail user=null;
-        user = userDetailRepository.findById(loginRequest.getUserid()).get();
+        try {
+            user = userDetailRepository.findById(loginRequest.getUserid()).get();
+        } catch (Exception e) {
+
+        }
         if(user==null){
             user=new UserDetail();
         }
@@ -167,7 +171,7 @@ public class AuthControllerKiteController {
             // Continue with the remaining logic...
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error: " + e.getMessage();
+            throw new RuntimeException(e);
         }
     }
 
