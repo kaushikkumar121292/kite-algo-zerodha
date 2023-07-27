@@ -36,7 +36,7 @@ public class TradeTerminatorService {
 
 
     @Order(1)
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 500)
     public void terminateTrades() throws IOException {
         Double ltp=ltpService.getLtp();
         List<TradeDetails> activeTrades = tradeDetailsService.getLatestActiveTradeDetails();

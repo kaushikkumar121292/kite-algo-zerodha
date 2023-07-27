@@ -46,7 +46,7 @@ public class MarkTrafficLightScheduler {
     @Autowired
     private PriceDataService priceDataService;
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 500)
     public void markLevelByTrafficLight() throws Exception {
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
         String instrumentToken = "256265";

@@ -45,7 +45,7 @@ public class TradeInitiatorService {
     private UserDetailRepository userDetailRepository;
 
     @Order(2)
-    @Scheduled(fixedDelay = 1000) // Execute every 1 seconds
+    @Scheduled(fixedDelay = 500) // Execute every 1 seconds
     public void initiateTrade() throws IOException, InterruptedException {
         double highValueMarkedLevel = getHighValue();
         double lowValueMarkedLevel = getLowValue();
