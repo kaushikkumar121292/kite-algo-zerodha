@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class MarkTrafficLightScheduler {
+public class TrafficLightSchedulerService {
 
     public static final String IJ_6185 = "IJ6185";
     @Autowired
@@ -48,6 +48,10 @@ public class MarkTrafficLightScheduler {
 
     @Scheduled(fixedDelay = 500)
     public void markLevelByTrafficLight() throws Exception {
+        LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+        if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
+            throw new IllegalStateException("Marking level is only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
+        }
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
         String instrumentToken = "256265";
         String interval = getMasterUser().getInterval();
@@ -56,10 +60,6 @@ public class MarkTrafficLightScheduler {
         LocalDate today = LocalDate.now(zoneId);
         String from = DateFrom + " " + timeFrom;
         String to = today + " " + LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        LocalTime currentTime = LocalTime.now(zoneId);
-        if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
-            throw new IllegalStateException("Marking level is only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
-        }
         if (tradeDetailsService.getLatestActiveTradeDetails()!=null) {
             throw new Exception("there is an ongoing trade!!!!");
         }
