@@ -59,7 +59,6 @@ public class AuthControllerKiteController {
         user.setUserId(loginRequest.getUserid());
         user.setPassword(loginRequest.getPassword());
         user.setTwofa(loginRequest.getTwofa());
-
         UserDetail createdUser = userDetailRepository.save(user);
 
         // Set the URI for the newly created user in the response headers
@@ -188,6 +187,7 @@ public class AuthControllerKiteController {
             existingUser.setMaximumRisk(userUpdateRequest.getMaximumRisk());
             existingUser.setProduct(userUpdateRequest.getProduct());
             existingUser.setExpiry(userUpdateRequest.getExpiry());
+            existingUser.setStrategy(userUpdateRequest.getStrategy());
             // Save the updated user details
             UserDetail updatedUser = userDetailRepository.save(existingUser);
             return ResponseEntity.ok(updatedUser);

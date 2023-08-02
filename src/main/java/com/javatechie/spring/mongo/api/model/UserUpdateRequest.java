@@ -14,4 +14,5 @@ public class UserUpdateRequest {
     private Double maximumRisk;
     private String product;
     private String interval;
+    private String strategy;
 }

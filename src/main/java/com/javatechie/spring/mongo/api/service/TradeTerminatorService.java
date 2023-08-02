@@ -34,8 +34,9 @@ public class TradeTerminatorService {
     @Autowired
     private UserDetailRepository userDetailRepository;
 
+    @Autowired
+    private PriceDataInsideCandleService priceDataInsideCandleService;
 
-    @Order(1)
     @Scheduled(fixedDelay = 500)
     public void terminateTrades() throws IOException {
         Double ltp=ltpService.getLtp();
@@ -117,7 +118,16 @@ public class TradeTerminatorService {
 
             orderService.placeOrder(orderRequest1, user);
             orderService.placeOrder(orderRequest2, user);
-            priceDataService.deleteAllPriceData();
+
+            if("TRAFFIC-LIGHT".equalsIgnoreCase(user.getStrategy())){
+                priceDataService.deleteAllPriceData();
+
+            }
+
+            if("INSIDE-CANDLE".equalsIgnoreCase(user.getStrategy())){
+                priceDataInsideCandleService.deleteAllPriceData();
+
+            }
         } else {
             logger.log(Level.WARNING, "Insufficient number of orders to exit the trade.");
         }
