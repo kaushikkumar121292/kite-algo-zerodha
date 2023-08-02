@@ -1,6 +1,6 @@
 package com.javatechie.spring.mongo.api.service;
 
-import com.javatechie.spring.mongo.api.model.PriceData;
+import com.javatechie.spring.mongo.api.model.PriceDataTraffic;
 import com.javatechie.spring.mongo.api.model.UserDetail;
 import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class TrafficLightSchedulerService {
     @Autowired
     private PriceDataService priceDataService;
 
-    @Scheduled(fixedDelay = 500)
+    //@Scheduled(fixedDelay = 500)
     public void markLevelByTrafficLight() throws Exception {
         LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
@@ -67,7 +67,7 @@ public class TrafficLightSchedulerService {
         String data = historicalDataService.getHistoryDataOfInstrument(instrumentToken, from, to, interval);
         List<Double> levels = extractHighLowFromJSONObjectService.getHighLowList(data);
         Collections.sort(levels);
-        PriceData priceData = new PriceData();
+        PriceDataTraffic priceData = new PriceDataTraffic();
         priceData.setLow(levels.get(0));
         priceData.setHigh(levels.get(levels.size() - 1));
         Double ltp = ltpService.getLtp();
@@ -76,9 +76,9 @@ public class TrafficLightSchedulerService {
         }
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(0, 1, sort);
-        Page<PriceData> page = priceDataRepository.findAll(pageable);
+        Page<PriceDataTraffic> page = priceDataRepository.findAll(pageable);
         if (page.hasContent()) {
-            PriceData latestPriceDataFromDb = page.getContent().get(0);
+            PriceDataTraffic latestPriceDataFromDb = page.getContent().get(0);
             if (latestPriceDataFromDb.getHigh() == priceData.getHigh() && latestPriceDataFromDb.getLow() == priceData.getLow()){
                 throw new Exception("same price data already exists in db");
             }

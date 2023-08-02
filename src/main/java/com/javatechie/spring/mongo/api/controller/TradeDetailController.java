@@ -5,15 +5,10 @@ import com.javatechie.spring.mongo.api.service.ExtractHighLowFromJSONObjectServi
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.javatechie.spring.mongo.api.model.*;
 import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
@@ -125,7 +120,7 @@ public class TradeDetailController {
 
 
     @PostMapping("/markLevel")
-    public ResponseEntity<String> savePriceData(@RequestBody List<PriceData> priceDataList) {
+    public ResponseEntity<String> savePriceData(@RequestBody List<PriceDataTraffic> priceDataList) {
         try {
             priceDataRepository.saveAll(priceDataList);
             return ResponseEntity.ok("Price data saved successfully");
@@ -135,12 +130,12 @@ public class TradeDetailController {
     }
 
     @GetMapping("/get-latest-level")
-    public ResponseEntity<PriceData> getLatestPriceData() {
+    public ResponseEntity<PriceDataTraffic> getLatestPriceData() {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(0, 1, sort);
-        Page<PriceData> page = priceDataRepository.findAll(pageable);
+        Page<PriceDataTraffic> page = priceDataRepository.findAll(pageable);
         if (page.hasContent()) {
-            PriceData latestPriceData = page.getContent().get(0);
+            PriceDataTraffic latestPriceData = page.getContent().get(0);
             return ResponseEntity.ok(latestPriceData);
         } else {
             return ResponseEntity.notFound().build();

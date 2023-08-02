@@ -1,14 +1,12 @@
 package com.javatechie.spring.mongo.api.service;
 
-import com.javatechie.spring.mongo.api.model.OrderRequest;
-import com.javatechie.spring.mongo.api.model.PriceDataTraffic;
-import com.javatechie.spring.mongo.api.model.TradeDetails;
-import com.javatechie.spring.mongo.api.model.UserDetail;
+import com.javatechie.spring.mongo.api.model.*;
 import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,15 +17,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.scheduling.annotation.Scheduled;
-
 @Service
-public class TradeInitiatorService {
+public class TradeInitiatorInsideCandleService {
 
-    private static final Logger logger = Logger.getLogger(TradeInitiatorService.class.getName());
+    private static final Logger logger = Logger.getLogger(TradeInitiatorInsideCandleService.class.getName());
 
     @Autowired
-    private PriceDataService priceDataService;
+    private  PriceDataInsideCandleService priceDataInsideCandleService;
 
     @Autowired
     private LtpService ltpService;
@@ -216,9 +212,9 @@ public class TradeInitiatorService {
     }
 
     public Double getHighValue() {
-        ResponseEntity<PriceDataTraffic> response = priceDataService.getLatestPriceData();
+        ResponseEntity<PriceDataInsideCandle> response = priceDataInsideCandleService.getLatestPriceData();
         if (response.getStatusCode().is2xxSuccessful()) {
-            PriceDataTraffic latestPriceData = response.getBody();
+            PriceDataInsideCandle latestPriceData = response.getBody();
             if (latestPriceData != null) {
                 return latestPriceData.getHigh();
             }
@@ -228,9 +224,9 @@ public class TradeInitiatorService {
     }
 
     public Double getLowValue() {
-        ResponseEntity<PriceDataTraffic> response = priceDataService.getLatestPriceData();
+        ResponseEntity<PriceDataInsideCandle> response = priceDataInsideCandleService.getLatestPriceData();
         if (response.getStatusCode().is2xxSuccessful()) {
-            PriceDataTraffic latestPriceData = response.getBody();
+            PriceDataInsideCandle latestPriceData = response.getBody();
             if (latestPriceData != null) {
                 return latestPriceData.getLow();
             }

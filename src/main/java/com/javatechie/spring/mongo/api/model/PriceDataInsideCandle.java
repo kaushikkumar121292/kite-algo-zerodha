@@ -10,14 +10,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "PRICE_DATA")
-public class PriceData {
-
+@Document(collection = "PRICE_DATA_INSIDE_CANDLE")
+public class PriceDataInsideCandle {
     @Id
     private String id;
     private double high;
     private double low;
     private String status;
-
-
 }
