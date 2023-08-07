@@ -22,6 +22,7 @@ public class TradeDetails {
 	private String status;
 	private String dateTime;
 	private String predictedTrend;
+	private double risk;
 	private List<OrderRequest> orderRequests;
 	private String userId;
 

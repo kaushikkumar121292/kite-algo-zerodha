@@ -186,6 +186,7 @@ public class TradeInitiatorInsideCandleService {
         tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
+        tradeDetails.setRisk(risk);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 
@@ -207,6 +208,7 @@ public class TradeInitiatorInsideCandleService {
         tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
+        tradeDetails.setRisk(risk);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 

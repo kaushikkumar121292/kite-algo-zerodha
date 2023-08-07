@@ -34,4 +34,8 @@ public class TradeDetailsService {
         }
         return null;
     }
+
+    public List<TradeDetails> getActiveTradesForUser(String userId) {
+        return tradeDetailsRepository.findByUserIdAndStatus(userId, "ACTIVE");
+    }
 }

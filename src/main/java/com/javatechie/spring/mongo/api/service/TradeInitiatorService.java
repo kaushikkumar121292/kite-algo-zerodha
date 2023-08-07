@@ -190,6 +190,7 @@ public class TradeInitiatorService {
         tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
+        tradeDetails.setRisk(risk);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 
@@ -211,6 +212,7 @@ public class TradeInitiatorService {
         tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
+        tradeDetails.setRisk(risk);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 
