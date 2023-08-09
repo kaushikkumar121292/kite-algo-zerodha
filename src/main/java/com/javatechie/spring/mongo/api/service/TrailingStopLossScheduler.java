@@ -39,9 +39,9 @@ public class TrailingStopLossScheduler {
                     tradeDetails.setTarget(trailing.getTrailingTarget());
                     tradeDetails.setTrailingCount(trailing.getTrailingCount());
 
-                    if(trailing.getTrailingStopLoss()== tradeDetails.getStopLoss() && trailing.getTrailingTarget()==tradeDetails.getTarget() && trailing.getTrailingCount()==tradeDetails.getTrailingCount()){
+                    /*if(trailing.getTrailingStopLoss()== tradeDetails.getStopLoss() && trailing.getTrailingTarget()==tradeDetails.getTarget() && trailing.getTrailingCount()==tradeDetails.getTrailingCount()){
                         throw new RuntimeException("Same trailing data found for long");
-                    }
+                    }*/
                     tradeDetailsService.saveTradeDetails(tradeDetails);
                 }
                 // Similarly, handle the "SHORT" case
@@ -54,9 +54,9 @@ public class TrailingStopLossScheduler {
                     tradeDetails.setStopLoss(trailing.getTrailingStopLoss());
                     tradeDetails.setTarget(trailing.getTrailingTarget());
                     tradeDetails.setTrailingCount(trailing.getTrailingCount());
-                    if(trailing.getTrailingStopLoss()== tradeDetails.getStopLoss() && trailing.getTrailingTarget()==tradeDetails.getTarget() && trailing.getTrailingCount()==tradeDetails.getTrailingCount()){
+                    /*if(trailing.getTrailingStopLoss()== tradeDetails.getStopLoss() && trailing.getTrailingTarget()==tradeDetails.getTarget() && trailing.getTrailingCount()==tradeDetails.getTrailingCount()){
                        throw new RuntimeException("Same trailing data found for short");
-                    }
+                    }*/
                     tradeDetailsService.saveTradeDetails(tradeDetails);
                 }
             }
