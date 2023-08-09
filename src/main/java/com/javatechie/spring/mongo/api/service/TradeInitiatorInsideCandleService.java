@@ -187,6 +187,7 @@ public class TradeInitiatorInsideCandleService {
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
         tradeDetails.setRisk(risk);
+        tradeDetails.setTrailingCount(0);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 
@@ -209,6 +210,7 @@ public class TradeInitiatorInsideCandleService {
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
         tradeDetails.setRisk(risk);
+        tradeDetails.setTrailingCount(0);
         tradeDetailsService.saveTradeDetails(tradeDetails);
     }
 

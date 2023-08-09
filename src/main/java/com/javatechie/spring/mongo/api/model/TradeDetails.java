@@ -25,5 +25,6 @@ public class TradeDetails {
 	private double risk;
 	private List<OrderRequest> orderRequests;
 	private String userId;
+	private int trailingCount;
 
 }
