@@ -100,33 +100,16 @@ public class TradeTerminatorService {
         if (orders.size() >= 2) {
             OrderRequest orderRequest1 = orders.get(0);
             OrderRequest orderRequest2 = orders.get(1);
-
-            if (orderRequest1.getTransactionType().equalsIgnoreCase("BUY")) {
-                orderRequest1.setTransactionType("SELL");
-            } else if (orderRequest1.getTransactionType().equalsIgnoreCase("SELL")) {
-                orderRequest1.setTransactionType("BUY");
-            }
-
-            if (orderRequest2.getTransactionType().equalsIgnoreCase("BUY")) {
-                orderRequest2.setTransactionType("SELL");
-            } else if (orderRequest2.getTransactionType().equalsIgnoreCase("SELL")) {
-                orderRequest2.setTransactionType("BUY");
-            }
-
-
+            orderRequest1.setTransactionType("SELL");
+            orderRequest2.setTransactionType("BUY");
             UserDetail user = userDetailRepository.findById(orderRequest1.getUserId()).get();
-
-            orderService.placeOrder(orderRequest1, user);
             orderService.placeOrder(orderRequest2, user);
-
+            orderService.placeOrder(orderRequest1, user);
             if("TRAFFIC-LIGHT".equalsIgnoreCase(user.getStrategy())){
                 priceDataService.deleteAllPriceData();
-
             }
-
             if("INSIDE-CANDLE".equalsIgnoreCase(user.getStrategy())){
                 priceDataInsideCandleService.deleteAllPriceData();
-
             }
         } else {
             logger.log(Level.WARNING, "Insufficient number of orders to exit the trade.");

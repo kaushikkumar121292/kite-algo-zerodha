@@ -38,10 +38,6 @@ public class TrailingStopLossScheduler {
                     tradeDetails.setStopLoss(trailing.getTrailingStopLoss());
                     tradeDetails.setTarget(trailing.getTrailingTarget());
                     tradeDetails.setTrailingCount(trailing.getTrailingCount());
-
-                    /*if(trailing.getTrailingStopLoss()== tradeDetails.getStopLoss() && trailing.getTrailingTarget()==tradeDetails.getTarget() && trailing.getTrailingCount()==tradeDetails.getTrailingCount()){
-                        throw new RuntimeException("Same trailing data found for long");
-                    }*/
                     tradeDetailsService.saveTradeDetails(tradeDetails);
                 }
                 // Similarly, handle the "SHORT" case
@@ -54,9 +50,6 @@ public class TrailingStopLossScheduler {
                     tradeDetails.setStopLoss(trailing.getTrailingStopLoss());
                     tradeDetails.setTarget(trailing.getTrailingTarget());
                     tradeDetails.setTrailingCount(trailing.getTrailingCount());
-                    /*if(trailing.getTrailingStopLoss()== tradeDetails.getStopLoss() && trailing.getTrailingTarget()==tradeDetails.getTarget() && trailing.getTrailingCount()==tradeDetails.getTrailingCount()){
-                       throw new RuntimeException("Same trailing data found for short");
-                    }*/
                     tradeDetailsService.saveTradeDetails(tradeDetails);
                 }
             }
@@ -64,10 +57,6 @@ public class TrailingStopLossScheduler {
     }
 
     private Trailing calculateTrailingStopLossForLong(double risk, double entry, double stopLoss, double currentPrice, double target,int trailingCount){
-        Trailing defTrailing = new Trailing();
-        defTrailing.setTrailingStopLoss(stopLoss);
-        defTrailing.setTrailingTarget(target);
-        defTrailing.setTrailingCount(trailingCount);
         if(currentPrice>=entry+(risk) && trailingCount==0){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss+(risk));
@@ -91,15 +80,11 @@ public class TrailingStopLossScheduler {
             return trailing;
         }
 
-        return defTrailing;
+        return null;
     }
 
 
     private Trailing calculateTrailingStopLossForShort(double risk, double entry, double stopLoss, double currentPrice, double target,int trailingCount) {
-        Trailing defTrailing = new Trailing();
-        defTrailing.setTrailingStopLoss(stopLoss);
-        defTrailing.setTrailingTarget(target);
-        defTrailing.setTrailingCount(trailingCount);
         if(currentPrice>=entry-(risk) && trailingCount==0){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
@@ -121,7 +106,7 @@ public class TrailingStopLossScheduler {
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
         }
-        return defTrailing;
+        return null;
 
     }
 }
