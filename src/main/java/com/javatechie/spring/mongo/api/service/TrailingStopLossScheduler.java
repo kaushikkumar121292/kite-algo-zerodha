@@ -85,21 +85,21 @@ public class TrailingStopLossScheduler {
 
 
     private Trailing calculateTrailingStopLossForShort(double risk, double entry, double stopLoss, double currentPrice, double target,int trailingCount) {
-        if(currentPrice>=entry-(risk) && trailingCount==0){
+        if(currentPrice<=entry-(risk) && trailingCount==0){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
             trailing.setTrailingTarget(target-(risk));
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
         }
-        if(currentPrice>=entry-(risk*2) && trailingCount==1){
+        if(currentPrice<=entry-(risk*2) && trailingCount==1){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
             trailing.setTrailingTarget(target-(risk));
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
         }
-        if(currentPrice>=entry-(risk*3) && trailingCount==2){
+        if(currentPrice<=entry-(risk*3) && trailingCount==2){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
             trailing.setTrailingTarget(target-(risk));
