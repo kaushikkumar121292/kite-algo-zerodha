@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -187,7 +188,7 @@ public class TradeInitiatorService {
         tradeDetails.setStatus("ACTIVE");
         tradeDetails.setPredictedTrend("SHORT");
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
-        tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
+        tradeDetails.setDateTime(LocalDateTime.now(zoneId).toString());
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
         tradeDetails.setRisk(risk);
@@ -210,7 +211,7 @@ public class TradeInitiatorService {
         tradeDetails.setStatus("ACTIVE");
         tradeDetails.setPredictedTrend("LONG");
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
-        tradeDetails.setDateTime(LocalTime.now(zoneId).toString());
+        tradeDetails.setDateTime(LocalDateTime.now(zoneId).toString());
         tradeDetails.setUserId(user.getUserId());
         tradeDetails.setOrderRequests(orderRequests);
         tradeDetails.setRisk(risk);
