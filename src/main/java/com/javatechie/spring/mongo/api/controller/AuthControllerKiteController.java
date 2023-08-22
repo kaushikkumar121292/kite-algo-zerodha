@@ -59,6 +59,7 @@ public class AuthControllerKiteController {
         user.setUserId(loginRequest.getUserid());
         user.setPassword(loginRequest.getPassword());
         user.setTwofa(loginRequest.getTwofa());
+        user.setStrategy("INSIDE-CANDLE");
         UserDetail createdUser = userDetailRepository.save(user);
 
         // Set the URI for the newly created user in the response headers

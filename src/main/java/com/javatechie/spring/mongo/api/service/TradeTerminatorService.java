@@ -97,7 +97,6 @@ public class TradeTerminatorService {
     }
 
     private void exitTrade(List<OrderRequest> orders) throws IOException {
-        if (orders.size() >= 2) {
             OrderRequest orderRequest1 = orders.get(0);
             OrderRequest orderRequest2 = orders.get(1);
             orderRequest1.setTransactionType("SELL");
@@ -111,9 +110,6 @@ public class TradeTerminatorService {
             if("INSIDE-CANDLE".equalsIgnoreCase(user.getStrategy())){
                 priceDataInsideCandleService.deleteAllPriceData();
             }
-        } else {
-            logger.log(Level.WARNING, "Insufficient number of orders to exit the trade.");
-        }
     }
 
 }
