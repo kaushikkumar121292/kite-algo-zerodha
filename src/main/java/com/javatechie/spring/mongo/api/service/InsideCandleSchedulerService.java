@@ -53,7 +53,6 @@ public class InsideCandleSchedulerService {
 
     @Scheduled(fixedDelay = 500)
     public void markLevelByInsideCandle() throws Exception {
-
         LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
             throw new IllegalStateException("Marking level is only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
@@ -62,7 +61,7 @@ public class InsideCandleSchedulerService {
         String instrumentToken = "256265";
         String interval = getMasterUser().getInterval();
         String timeFrom = "09:15:00";
-        String DateFrom = "2023-07-03";
+        String DateFrom = LocalDate.now(zoneId).toString();
         LocalDate today = LocalDate.now(zoneId);
         String from = DateFrom + " " + timeFrom;
         String to = today + " " + LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));

@@ -56,7 +56,7 @@ public class TrafficLightSchedulerService {
         String instrumentToken = "256265";
         String interval = getMasterUser().getInterval();
         String timeFrom = "09:15:00";
-        String DateFrom = "2023-07-03";
+        String DateFrom = LocalDate.now(zoneId).toString();
         LocalDate today = LocalDate.now(zoneId);
         String from = DateFrom + " " + timeFrom;
         String to = today + " " + LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
