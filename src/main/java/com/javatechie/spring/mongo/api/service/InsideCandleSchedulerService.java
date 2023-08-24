@@ -5,6 +5,7 @@ import com.javatechie.spring.mongo.api.model.PriceDataInsideCandle;
 import com.javatechie.spring.mongo.api.model.PriceDataTraffic;
 import com.javatechie.spring.mongo.api.model.UserDetail;
 import com.javatechie.spring.mongo.api.repository.PriceDataInsideCandleRepository;
+import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

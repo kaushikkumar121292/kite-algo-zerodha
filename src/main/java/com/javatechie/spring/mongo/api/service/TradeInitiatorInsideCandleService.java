@@ -56,10 +56,16 @@ public class TradeInitiatorInsideCandleService {
                 List<UserDetail> users = getAllUser();
                 for (UserDetail user : users) {
                     try {
+                        if(user.getAllowedTrades()==user.getTradeCountOfDay()){
+                            priceDataInsideCandleService.deleteAllPriceData();
+                            throw new RuntimeException("you have reached maximum number of trades allowed per day");
+                        }
                         List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
                         orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
                         setTargetAndStopLossForLong(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
+                        user.setTradeCountOfDay(user.getTradeCountOfDay()+1);
+                        userDetailRepository.save(user);
                         logger.log(Level.INFO, "Trade details for user {0} set for LONG.", user.getUserId());
                     } catch (IOException e) {
                         logger.log(Level.SEVERE, "Error while placing order for user : {0}", user.getUserId());
@@ -71,10 +77,16 @@ public class TradeInitiatorInsideCandleService {
                 // Initiate short trade(place short order) for all user
                 for (UserDetail user : users) {
                     try {
+                        if(user.getAllowedTrades()==user.getTradeCountOfDay()){
+                            priceDataInsideCandleService.deleteAllPriceData();
+                            throw new RuntimeException("you have reached maximum number of trades allowed per day");
+                        }
                         List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
                         orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
                         setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
+                        user.setTradeCountOfDay(user.getTradeCountOfDay()+1);
+                        userDetailRepository.save(user);
                         logger.log(Level.INFO, "Trade details for user {0} set for SHORT.", user.getUserId());
                     } catch (IOException e) {
                         logger.log(Level.SEVERE, "Error while placing order for user : {0}", user.getUserId());

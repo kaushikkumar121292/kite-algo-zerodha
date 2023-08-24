@@ -26,4 +26,6 @@ public class UserDetail {
     private String product;
     private String interval;
     private String strategy;
+    private int allowedTrades;
+    private int tradeCountOfDay;
 }
