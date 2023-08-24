@@ -56,7 +56,7 @@ public class TradeInitiatorInsideCandleService {
                 List<UserDetail> users = getAllUser();
                 for (UserDetail user : users) {
                     try {
-                        if(user.getAllowedTrades()==user.getTradeCountOfDay()){
+                        if(user.getMaxTradesPerDay()==user.getTradeCountOfDay()){
                             priceDataInsideCandleService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }
@@ -77,7 +77,7 @@ public class TradeInitiatorInsideCandleService {
                 // Initiate short trade(place short order) for all user
                 for (UserDetail user : users) {
                     try {
-                        if(user.getAllowedTrades()==user.getTradeCountOfDay()){
+                        if(user.getMaxTradesPerDay()==user.getTradeCountOfDay()){
                             priceDataInsideCandleService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }

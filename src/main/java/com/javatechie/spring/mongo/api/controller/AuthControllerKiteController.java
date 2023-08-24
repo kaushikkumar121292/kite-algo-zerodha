@@ -188,7 +188,7 @@ public class AuthControllerKiteController {
             existingUser.setProduct(userUpdateRequest.getProduct());
             existingUser.setExpiry(userUpdateRequest.getExpiry());
             existingUser.setStrategy(userUpdateRequest.getStrategy());
-            existingUser.setAllowedTrades(userUpdateRequest.getAllowedTrades());
+            existingUser.setMaxTradesPerDay(userUpdateRequest.getMaxTradesPerDay());
             existingUser.setTradeCountOfDay(0);
             // Save the updated user details
             UserDetail updatedUser = userDetailRepository.save(existingUser);
