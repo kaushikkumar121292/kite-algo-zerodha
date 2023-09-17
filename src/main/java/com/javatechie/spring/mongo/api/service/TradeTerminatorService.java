@@ -46,7 +46,10 @@ public class TradeTerminatorService {
                 if (ltp >= activeTrade.getTarget()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders);
+/*
+                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
+*/
+                        exitTradeForOptionBuying(orders);
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Long trade hit the target for User ID: {0}", activeTrade.getUserId());
@@ -56,7 +59,10 @@ public class TradeTerminatorService {
                 } else if (ltp <= activeTrade.getStopLoss()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders);
+/*
+                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
+*/
+                        exitTradeForOptionBuying(orders);
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Long trade hit the stop loss. User ID: {0}", activeTrade.getUserId());
@@ -72,7 +78,10 @@ public class TradeTerminatorService {
                 if (ltp <= activeTrade.getTarget()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders);
+/*
+                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
+*/
+                        exitTradeForOptionBuying(orders);
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Short trade hit the target. User ID: {0}", activeTrade.getUserId());
@@ -82,7 +91,10 @@ public class TradeTerminatorService {
                 } else if (ltp >= activeTrade.getStopLoss()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-                        exitTrade(orders);
+/*
+                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
+*/
+                        exitTradeForOptionBuying(orders);
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Short trade hit the stop loss. User ID: {0}", activeTrade.getUserId());
@@ -96,7 +108,7 @@ public class TradeTerminatorService {
         }
     }
 
-    private void exitTrade(List<OrderRequest> orders) throws IOException {
+    private void exitTradeForBullPutSpreadAndBearCallSpread(List<OrderRequest> orders) throws IOException {
             OrderRequest orderRequest1 = orders.get(0);
             OrderRequest orderRequest2 = orders.get(1);
             orderRequest1.setTransactionType("SELL");
@@ -110,6 +122,20 @@ public class TradeTerminatorService {
             if("INSIDE-CANDLE".equalsIgnoreCase(user.getStrategy())){
                 priceDataInsideCandleService.deleteAllPriceData();
             }
+    }
+
+
+    private void exitTradeForOptionBuying(List<OrderRequest> orders) throws IOException {
+        OrderRequest orderRequest= orders.get(0);
+        orderRequest.setTransactionType("SELL");
+        UserDetail user = userDetailRepository.findById(orderRequest.getUserId()).get();
+        orderService.placeOrder(orderRequest, user);
+        if("TRAFFIC-LIGHT".equalsIgnoreCase(user.getStrategy())){
+            priceDataService.deleteAllPriceData();
+        }
+        if("INSIDE-CANDLE".equalsIgnoreCase(user.getStrategy())){
+            priceDataInsideCandleService.deleteAllPriceData();
+        }
     }
 
 }

@@ -87,7 +87,10 @@ public class InsideCandleSchedulerService {
                 throw new Exception("same price data already exists in db");
             }
         }
-        priceDataRepository.save(priceData);
+        if(Math.abs(calculateCenterPoint(priceData.getHigh(),priceData.getLow()) - ltp)<1){
+            priceDataRepository.save(priceData);
+        }
+
     }
 
 
@@ -96,6 +99,11 @@ public class InsideCandleSchedulerService {
         UserDetail userDetail = mongoTemplate.findOne(query, UserDetail.class);
         return userDetail;
     }
+
+    public static double calculateCenterPoint(double highPrice, double lowPrice) {
+        return (highPrice + lowPrice) / 2;
+    }
+
 
     @Scheduled(cron = "0 31 15 * * *", zone = "Asia/Kolkata")
     public void executeTask() throws Exception {
