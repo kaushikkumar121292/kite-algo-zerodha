@@ -88,7 +88,7 @@ public class InsideCandleSchedulerService {
             }
         }
         double halfLengthOfMotherCandle = calculateHalfOfMotherCandle(priceData.getHigh(), priceData.getLow(), ltp);
-        if(ltp > (priceData.getHigh()+halfLengthOfMotherCandle) && ltp<(priceData.getLow()-halfLengthOfMotherCandle)){
+        if(ltp > (priceData.getHigh()+halfLengthOfMotherCandle) || ltp<(priceData.getLow()-halfLengthOfMotherCandle)){
             priceDataRepository.save(priceData);
         }
 
