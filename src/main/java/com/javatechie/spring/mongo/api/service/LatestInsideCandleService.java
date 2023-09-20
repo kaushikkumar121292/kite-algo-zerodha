@@ -8,12 +8,13 @@ import com.javatechie.spring.mongo.api.model.Candle;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class LatestInsideCandleService {
 
-    public Candle findLatestInsideCandle(String jsonData) {
+    public List<Candle> findLatestInsideCandle(String jsonData) {
         List<Candle> candles = parseCandlesFromJson(jsonData);
         return findLatestInsideCandle(candles);
     }
@@ -39,13 +40,13 @@ public class LatestInsideCandleService {
         return candles;
     }
 
-    public Candle findLatestInsideCandle(List<Candle> candles) {
+    public List<Candle> findLatestInsideCandle(List<Candle> candles) {
         for (int i = candles.size() - 2; i > 0; i--) {
-            Candle currentCandle = candles.get(i);
-            Candle previousCandle = candles.get(i - 1);
+            Candle babyCandle = candles.get(i);
+            Candle motherCandle = candles.get(i - 1);
 
-            if (isInsideCandle(currentCandle, previousCandle)) {
-                return currentCandle;
+            if (isInsideCandle(babyCandle, motherCandle)) {
+                return Arrays.asList(babyCandle,motherCandle);
             }
         }
         return null;

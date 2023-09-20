@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 public class InsideCandleSchedulerService {
@@ -70,14 +71,13 @@ public class InsideCandleSchedulerService {
             throw new Exception("there is an ongoing trade!!!!");
         }
         String data = historicalDataService.getHistoryDataOfInstrument(instrumentToken, from, to, interval);
-        Candle level = latestInsideCandleService.findLatestInsideCandle(data);
+        List<Candle> motherBabyCandles = latestInsideCandleService.findLatestInsideCandle(data);
+        Candle babyCandle = motherBabyCandles.get(0);
+        Candle MotherCandle = motherBabyCandles.get(1);
         PriceDataInsideCandle priceData = new PriceDataInsideCandle();
-        priceData.setLow(level.getLow());
-        priceData.setHigh(level.getHigh());
+        priceData.setLow(MotherCandle.getLow());
+        priceData.setHigh(MotherCandle.getHigh());
         Double ltp = ltpService.getLtp();
-        if (ltp < priceData.getLow() || ltp > priceData.getHigh()) {
-            throw new IllegalArgumentException("Price is out of range, not marking any level for Inside Candle");
-        }
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(0, 1, sort);
         Page<PriceDataInsideCandle> page = priceDataRepository.findAll(pageable);
@@ -87,9 +87,11 @@ public class InsideCandleSchedulerService {
                 throw new Exception("same price data already exists in db");
             }
         }
-        if(Math.abs(calculateCenterPoint(priceData.getHigh(),priceData.getLow()) - ltp)<1){
+        double halfLengthOfMotherCandle = calculateHalfOfMotherCandle(priceData.getHigh(), priceData.getLow(), ltp);
+        if(ltp > (priceData.getHigh()+halfLengthOfMotherCandle) && ltp<(priceData.getLow()-halfLengthOfMotherCandle)){
             priceDataRepository.save(priceData);
         }
+
 
     }
 
@@ -100,8 +102,8 @@ public class InsideCandleSchedulerService {
         return userDetail;
     }
 
-    public static double calculateCenterPoint(double highPrice, double lowPrice) {
-        return (highPrice + lowPrice) / 2;
+    public static double calculateHalfOfMotherCandle(double highPrice, double lowPrice, double ltp) {
+        return (highPrice - lowPrice) / 2;
     }
 
 
