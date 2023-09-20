@@ -90,9 +90,12 @@ public class TradeInitiatorService {
                             priceDataService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }
-                        List<OrderRequest> orderRequests = getOrderRequestBullPutSpreadAndBearCallSpread(ltp, flag, user);
+                       /*  List<OrderRequest> orderRequests = getOrderRequestBullPutSpreadAndBearCallSpread(ltp, flag, user);
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
-                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
+                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order*/
+                        List<OrderRequest> orderRequests = getOrderRequestOptionBuying(ltp, flag, user);
+                        //doing plane option buying
+                        orderService.placeOrder(orderRequests.get(0),user);
                         setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
                         user.setTradeCountOfDay(user.getTradeCountOfDay()+1);
                         userDetailRepository.save(user);

@@ -60,9 +60,12 @@ public class TradeInitiatorInsideCandleService {
                             priceDataInsideCandleService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }
-                        List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
+                         /*  List<OrderRequest> orderRequests = getOrderRequestBullPutSpreadAndBearCallSpread(ltp, flag, user);
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
-                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
+                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order*/
+                        List<OrderRequest> orderRequests = getOrderRequestOptionBuying(ltp, flag, user);
+                        //doing plane option buying
+                        orderService.placeOrder(orderRequests.get(0),user);
                         setTargetAndStopLossForLong(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
                         user.setTradeCountOfDay(user.getTradeCountOfDay()+1);
                         userDetailRepository.save(user);
@@ -81,9 +84,12 @@ public class TradeInitiatorInsideCandleService {
                             priceDataInsideCandleService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }
-                        List<OrderRequest> orderRequests = getOrderRequest(ltp, flag, user);
+                        /*  List<OrderRequest> orderRequests = getOrderRequestBullPutSpreadAndBearCallSpread(ltp, flag, user);
                         orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
-                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
+                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order*/
+                        List<OrderRequest> orderRequests = getOrderRequestOptionBuying(ltp, flag, user);
+                        //doing plane option buying
+                        orderService.placeOrder(orderRequests.get(0),user);
                         setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
                         user.setTradeCountOfDay(user.getTradeCountOfDay()+1);
                         userDetailRepository.save(user);
@@ -100,7 +106,53 @@ public class TradeInitiatorInsideCandleService {
         }
     }
 
-    private List<OrderRequest> getOrderRequest(Double spotPrice, String flag, UserDetail user) {
+    private List<OrderRequest> getOrderRequestOptionBuying(Double spotPrice, String flag, UserDetail user) {
+        int ATM = (int) (Math.round(spotPrice / 50) * 50);
+        List<OrderRequest> orderRequest = null;
+        if (flag.equalsIgnoreCase("BULLISH")) {
+            OrderRequest callBuy = new OrderRequest();
+            callBuy.setDisclosedQuantity("0");
+            callBuy.setExchange("NFO");
+            callBuy.setOrderType("MARKET");
+            callBuy.setPrice("0");
+            callBuy.setProduct(user.getProduct());
+            callBuy.setQuantity(user.getQuantity());
+            callBuy.setSquareoff("0");
+            callBuy.setStoploss("0");
+            callBuy.setTrailingStoploss("0");
+            callBuy.setTriggerPrice("0");
+            callBuy.setUserId(null);
+            callBuy.setValidity("DAY");
+            callBuy.setTransactionType("BUY");
+            callBuy.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM - 200) + "CE");
+            orderRequest = new ArrayList<>();
+            orderRequest.add(callBuy);
+
+        }else if (flag.equalsIgnoreCase("BEARISH")) {
+
+            OrderRequest putBuy = new OrderRequest();
+            putBuy.setDisclosedQuantity("0");
+            putBuy.setExchange("NFO");
+            putBuy.setOrderType("MARKET");
+            putBuy.setPrice("0");
+            putBuy.setProduct(user.getProduct());
+            putBuy.setQuantity(user.getQuantity());
+            putBuy.setSquareoff("0");
+            putBuy.setStoploss("0");
+            putBuy.setTrailingStoploss("0");
+            putBuy.setTriggerPrice("0");
+            putBuy.setUserId(null);
+            putBuy.setValidity("DAY");
+            putBuy.setTransactionType("BUY");
+            putBuy.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM + 150) + "PE");
+            orderRequest = new ArrayList<>();
+            orderRequest.add(putBuy);
+        }
+
+        return orderRequest;
+    }
+
+    private List<OrderRequest> getOrderRequestBullPutSpreadAndBearCallSpread(Double spotPrice, String flag, UserDetail user) {
         int ATM = (int) (Math.round(spotPrice / 50) * 50);
         List<OrderRequest> orderRequests = null;
         if (flag.equalsIgnoreCase("BULLISH")) {
@@ -118,7 +170,7 @@ public class TradeInitiatorInsideCandleService {
             leg1.setUserId(null);
             leg1.setValidity("DAY");
             leg1.setTransactionType("BUY");
-            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM - 250) + "PE");
+            leg1.setTradingSymbol("NIFTY" + user.getExpiry() + (ATM - 150) + "PE");
 
             OrderRequest leg2 = new OrderRequest();
             leg2.setDisclosedQuantity("0");
@@ -179,7 +231,6 @@ public class TradeInitiatorInsideCandleService {
 
         return orderRequests;
     }
-
 
     private void setTargetAndSLforShort(Double highValueMarkedLevel,Double lowValueMarkedLevel, UserDetail user, List<OrderRequest> orderRequests) throws IOException {
         Double entry = ltpService.getLtp();
