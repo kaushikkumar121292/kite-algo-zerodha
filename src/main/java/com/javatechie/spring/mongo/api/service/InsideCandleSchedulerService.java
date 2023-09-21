@@ -31,7 +31,8 @@ public class InsideCandleSchedulerService {
 
     public static final String IJ_6185 = "IJ6185";
 
-    public double closedPrice;
+
+    public Candle secondLastCandle;
 
     @Autowired
     private PriceDataInsideCandleRepository priceDataRepository;
@@ -79,9 +80,12 @@ public class InsideCandleSchedulerService {
         List<Candle> motherBabyCandles = latestInsideCandleService.findLatestInsideCandle(data);
         Candle babyCandle = motherBabyCandles.get(0);
         Candle MotherCandle = motherBabyCandles.get(1);
+        Boolean flag=checkRedGreenPair(babyCandle,MotherCandle);
         PriceDataInsideCandle priceData = new PriceDataInsideCandle();
-        priceData.setLow(MotherCandle.getLow());
-        priceData.setHigh(MotherCandle.getHigh());
+        if(flag){
+            priceData.setLow(MotherCandle.getLow());
+            priceData.setHigh(MotherCandle.getHigh());
+        }
         Double ltp = ltpService.getLtp();
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(0, 1, sort);
@@ -93,12 +97,28 @@ public class InsideCandleSchedulerService {
             }
         }
 
-        if((closedPrice!=0.0) && (closedPrice>priceData.getHigh() || closedPrice<priceData.getLow())){
+        if((secondLastCandle.getClose()!=0.0) &&
+                ((secondLastCandle.getHigh()>priceData.getLow() && secondLastCandle.getClose()<priceData.getLow()) || (secondLastCandle.getLow()<priceData.getHigh()&& secondLastCandle.getClose()>priceData.getHigh())) &&
+                (secondLastCandle.getClose()>priceData.getHigh() || secondLastCandle.getClose()<priceData.getLow())){
             priceDataRepository.save(priceData);
-            closedPrice=0.0;
         }
 
     }
+
+    private Boolean checkRedGreenPair(Candle babyCandle, Candle motherCandle) {
+        // Check if babyCandle is red and motherCandle is green
+        if (babyCandle.getOpen() > babyCandle.getClose() && motherCandle.getOpen() < motherCandle.getClose()) {
+            return true; // Red-Green pair
+        }
+
+        // Check if babyCandle is green and motherCandle is red
+        if (babyCandle.getOpen() < babyCandle.getClose() && motherCandle.getOpen() > motherCandle.getClose()) {
+            return true; // Green-Red pair
+        }
+
+        return false; // Neither red-green nor green-red pair
+    }
+
 
 
     private UserDetail getMasterUser() {
@@ -170,8 +190,7 @@ public class InsideCandleSchedulerService {
             int secondLastIndex = candleList.size() - 2; // Calculate the index of the second last candle
 
             if (secondLastIndex >= 0) {
-                Candle secondLastCandle = candleList.get(secondLastIndex);
-                closedPrice=secondLastCandle.getClose();
+                secondLastCandle = candleList.get(secondLastIndex);
             }
 
         } catch (Exception e) {
