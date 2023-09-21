@@ -1,5 +1,7 @@
 package com.javatechie.spring.mongo.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javatechie.spring.mongo.api.model.Candle;
 import com.javatechie.spring.mongo.api.model.PriceDataInsideCandle;
 import com.javatechie.spring.mongo.api.model.PriceDataTraffic;
@@ -21,12 +23,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class InsideCandleSchedulerService {
 
     public static final String IJ_6185 = "IJ6185";
+
+    public double closedPrice;
 
     @Autowired
     private PriceDataInsideCandleRepository priceDataRepository;
@@ -87,11 +92,11 @@ public class InsideCandleSchedulerService {
                 throw new Exception("same price data already exists in db");
             }
         }
-        double halfLengthOfMotherCandle = calculateHalfOfMotherCandle(priceData.getHigh(), priceData.getLow(), ltp);
-        if(ltp > (priceData.getHigh()+halfLengthOfMotherCandle) || ltp<(priceData.getLow()-halfLengthOfMotherCandle)){
-            priceDataRepository.save(priceData);
-        }
 
+        if((closedPrice!=0.0) && (closedPrice>priceData.getHigh() || closedPrice<priceData.getLow())){
+            priceDataRepository.save(priceData);
+            closedPrice=0.0;
+        }
 
     }
 
@@ -113,6 +118,68 @@ public class InsideCandleSchedulerService {
             throw new Exception("there is an ongoing trade!!!!");
         }
         priceDataService.deleteAllPriceData();
+    }
+
+    @Scheduled(fixedDelay = 500)
+    public void checkCandleClosed() throws Exception {
+        ZoneId zoneId = ZoneId.of("Asia/Kolkata");
+        String instrumentToken = "256265";
+        String interval = getMasterUser().getInterval();
+        String timeFrom = "09:15:00";
+        String DateFrom = LocalDate.now(zoneId).toString();
+        LocalDate today = LocalDate.now(zoneId);
+        String from = DateFrom + " " + timeFrom;
+        String to = today + " " + LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String jsonData = historicalDataService.getHistoryDataOfInstrument(instrumentToken, from, to, interval);
+
+        try {
+            // Create an ObjectMapper instance
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            // Parse the JSON string into a JsonNode
+            JsonNode jsonNode = objectMapper.readTree(jsonData);
+
+            // Access the "candles" array
+            JsonNode candlesNode = jsonNode.get("data").get("candles");
+
+            // Create a list to store Candle objects
+            List<Candle> candleList = new ArrayList<>();
+
+            // Iterate through the candlestick data and map it to Candle objects
+            for (JsonNode candle : candlesNode) {
+                String timestamp = candle.get(0).asText();
+                double openPrice = candle.get(1).asDouble();
+                double highPrice = candle.get(2).asDouble();
+                double lowPrice = candle.get(3).asDouble();
+                double closePrice = candle.get(4).asDouble();
+                int volume = candle.get(5).asInt();
+
+                // Create a Candle object and add it to the list
+                Candle candleObj = Candle.builder()
+                        .timestamp(timestamp)
+                        .open(openPrice)
+                        .high(highPrice)
+                        .low(lowPrice)
+                        .close(closePrice)
+                        .volume(volume)
+                        .build();
+
+                candleList.add(candleObj);
+            }
+
+            int secondLastIndex = candleList.size() - 2; // Calculate the index of the second last candle
+
+            if (secondLastIndex >= 0) {
+                Candle secondLastCandle = candleList.get(secondLastIndex);
+                closedPrice=secondLastCandle.getClose();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 
 
