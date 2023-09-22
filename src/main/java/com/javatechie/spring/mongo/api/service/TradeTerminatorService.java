@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,10 +47,16 @@ public class TradeTerminatorService {
                 if (ltp >= activeTrade.getTarget()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-/*
-                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
-*/
-                        exitTradeForOptionBuying(orders);
+                        UserDetail userDetail = userDetailRepository.findById(activeTrade.getUserId()).get();
+
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("BULL_PUT_SPREAD_OR_BEAR_CALL_SPREAD")){
+                            exitTradeForBullPutSpreadAndBearCallSpread(orders);
+
+                        }
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("ITM_OPTION_BUYING")) {
+                            exitTradeForOptionBuying(orders);
+                        }
+
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Long trade hit the target for User ID: {0}", activeTrade.getUserId());
@@ -59,10 +66,15 @@ public class TradeTerminatorService {
                 } else if (ltp <= activeTrade.getStopLoss()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-/*
-                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
-*/
-                        exitTradeForOptionBuying(orders);
+                        UserDetail userDetail = userDetailRepository.findById(activeTrade.getUserId()).get();
+
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("BULL_PUT_SPREAD_OR_BEAR_CALL_SPREAD")){
+                            exitTradeForBullPutSpreadAndBearCallSpread(orders);
+
+                        }
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("ITM_OPTION_BUYING")) {
+                            exitTradeForOptionBuying(orders);
+                        }
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Long trade hit the stop loss. User ID: {0}", activeTrade.getUserId());
@@ -78,10 +90,15 @@ public class TradeTerminatorService {
                 if (ltp <= activeTrade.getTarget()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-/*
-                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
-*/
-                        exitTradeForOptionBuying(orders);
+                        UserDetail userDetail = userDetailRepository.findById(activeTrade.getUserId()).get();
+
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("BULL_PUT_SPREAD_OR_BEAR_CALL_SPREAD")){
+                            exitTradeForBullPutSpreadAndBearCallSpread(orders);
+
+                        }
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("ITM_OPTION_BUYING")) {
+                            exitTradeForOptionBuying(orders);
+                        }
                         activeTrade.setStatus("TARGET");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Short trade hit the target. User ID: {0}", activeTrade.getUserId());
@@ -91,10 +108,15 @@ public class TradeTerminatorService {
                 } else if (ltp >= activeTrade.getStopLoss()) {
                     try {
                         List<OrderRequest> orders = activeTrade.getOrderRequests();
-/*
-                        exitTradeForBullPutSpreadAndBearCallSpread(orders);
-*/
-                        exitTradeForOptionBuying(orders);
+                        UserDetail userDetail = userDetailRepository.findById(activeTrade.getUserId()).get();
+
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("BULL_PUT_SPREAD_OR_BEAR_CALL_SPREAD")){
+                            exitTradeForBullPutSpreadAndBearCallSpread(orders);
+
+                        }
+                        if(userDetail.getOptionStrategy().equalsIgnoreCase("ITM_OPTION_BUYING")) {
+                            exitTradeForOptionBuying(orders);
+                        }
                         activeTrade.setStatus("STOPLOSS");
                         tradeDetailsService.saveTradeDetails(activeTrade);
                         logger.log(Level.INFO, "Short trade hit the stop loss. User ID: {0}", activeTrade.getUserId());
