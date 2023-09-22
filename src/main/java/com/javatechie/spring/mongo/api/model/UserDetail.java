@@ -28,4 +28,5 @@ public class UserDetail {
     private String strategy;
     private int maxTradesPerDay;
     private int tradeCountOfDay;
+    private String optionStrategy;
 }

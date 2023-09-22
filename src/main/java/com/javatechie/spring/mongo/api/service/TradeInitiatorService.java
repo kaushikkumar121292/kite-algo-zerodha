@@ -90,12 +90,17 @@ public class TradeInitiatorService {
                             priceDataService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }
-                       /*  List<OrderRequest> orderRequests = getOrderRequestBullPutSpreadAndBearCallSpread(ltp, flag, user);
-                        orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
-                        orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order*/
-                        List<OrderRequest> orderRequests = getOrderRequestOptionBuying(ltp, flag, user);
-                        //doing plane option buying
-                        orderService.placeOrder(orderRequests.get(0),user);
+                        List<OrderRequest> orderRequests=null;
+                        if(user.getOptionStrategy().equalsIgnoreCase("BULL_PUT_SPREAD_OR_BEAR_CALL_SPREAD")){
+                            orderRequests = getOrderRequestBullPutSpreadOrBearCallSpread(ltp, flag, user);
+                            orderService.placeOrder(orderRequests.get(0), user); // Place the buy leg order
+                            orderService.placeOrder(orderRequests.get(1), user); // Place the sell leg order
+                        }
+                        if(user.getOptionStrategy().equalsIgnoreCase("ITM_OPTION_BUYING")){
+                            orderRequests = getOrderRequestOptionBuying(ltp, flag, user);
+                            //doing plane option buying
+                            orderService.placeOrder(orderRequests.get(0),user);
+                        }
                         setTargetAndSLforShort(highValueMarkedLevel, lowValueMarkedLevel, user, orderRequests);
                         user.setTradeCountOfDay(user.getTradeCountOfDay()+1);
                         userDetailRepository.save(user);
@@ -158,7 +163,7 @@ public class TradeInitiatorService {
         return orderRequest;
     }
 
-    private List<OrderRequest> getOrderRequestBullPutSpreadAndBearCallSpread(Double spotPrice, String flag, UserDetail user) {
+    private List<OrderRequest> getOrderRequestBullPutSpreadOrBearCallSpread(Double spotPrice, String flag, UserDetail user) {
         int ATM = (int) (Math.round(spotPrice / 50) * 50);
         List<OrderRequest> orderRequests = null;
         if (flag.equalsIgnoreCase("BULLISH")) {
