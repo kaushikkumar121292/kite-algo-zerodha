@@ -16,4 +16,5 @@ public class UserUpdateRequest {
     private String interval;
     private String strategy;
     private int maxTradesPerDay;
+    private String optionStrategy;
 }
