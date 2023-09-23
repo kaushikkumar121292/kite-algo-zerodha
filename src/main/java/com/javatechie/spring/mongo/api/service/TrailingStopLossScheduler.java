@@ -57,14 +57,22 @@ public class TrailingStopLossScheduler {
     }
 
     private Trailing calculateTrailingStopLossForLong(double risk, double entry, double stopLoss, double currentPrice, double target,int trailingCount){
-        if(currentPrice>=entry+(risk) && trailingCount==0 && risk<30){
+        /*if(currentPrice>=entry+(risk) && trailingCount==0 && risk<30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss+(risk));
             trailing.setTrailingTarget(target+(risk));
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
+        }*/
+        if(currentPrice>=entry+(risk*2) && trailingCount==0 && risk<30){
+            Trailing trailing = new Trailing();
+            trailing.setTrailingStopLoss(stopLoss+(risk*2));
+            trailing.setTrailingTarget(target+(risk));
+            trailing.setTrailingCount(trailingCount+1);
+            return trailing;
         }
-        if(currentPrice>=entry+(risk*2) && trailingCount==1 && risk<30){
+
+        if(currentPrice>=entry+(risk*3) && trailingCount==1 && risk<30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss+(risk));
             trailing.setTrailingTarget(target+(risk));
@@ -72,7 +80,7 @@ public class TrailingStopLossScheduler {
             return trailing;
         }
 
-        if(currentPrice>=entry+(risk*3) && trailingCount==2 && risk<30){
+        if(currentPrice>=entry+(risk*4) && trailingCount==2 && risk<30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss+(risk));
             trailing.setTrailingTarget(target+(risk));
@@ -80,31 +88,23 @@ public class TrailingStopLossScheduler {
             return trailing;
         }
 
-        if(currentPrice>=entry+(risk*4) && trailingCount==3 && risk<30){
-            Trailing trailing = new Trailing();
-            trailing.setTrailingStopLoss(stopLoss+(risk));
-            trailing.setTrailingTarget(target+(risk));
-            trailing.setTrailingCount(trailingCount+1);
-            return trailing;
-        }
-
-        if(currentPrice>=entry+(risk) && trailingCount==0 && risk==30){
+        /*if(currentPrice>=entry+(risk) && trailingCount==0 && risk==30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss+(risk));
             trailing.setTrailingTarget(target);
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
-        }
+        }*/
 
-        if(currentPrice>=entry+(risk*2) && trailingCount==1 && risk==30){
+        if(currentPrice>=entry+(risk*2) && trailingCount==0 && risk==30){
             Trailing trailing = new Trailing();
-            trailing.setTrailingStopLoss(stopLoss+(risk));
+            trailing.setTrailingStopLoss(stopLoss+(risk*2));
             trailing.setTrailingTarget(target);
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
         }
 
-        if(currentPrice>=entry+(risk*3) && trailingCount==2 && risk==30){
+        if(currentPrice>=entry+(risk*3) && trailingCount==1 && risk==30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss+(risk));
             trailing.setTrailingTarget(target);
@@ -117,29 +117,21 @@ public class TrailingStopLossScheduler {
 
 
     private Trailing calculateTrailingStopLossForShort(double risk, double entry, double stopLoss, double currentPrice, double target,int trailingCount) {
-        if(currentPrice<=entry-(risk) && trailingCount==0 && risk<30){
+       /* if(currentPrice<=entry-(risk) && trailingCount==0 && risk<30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
             trailing.setTrailingTarget(target-(risk));
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
-        }
-        if(currentPrice<=entry-(risk*2) && trailingCount==1 && risk<30){
+        }*/
+        if(currentPrice<=entry-(risk*2) && trailingCount==0 && risk<30){
             Trailing trailing = new Trailing();
-            trailing.setTrailingStopLoss(stopLoss-(risk));
+            trailing.setTrailingStopLoss(stopLoss-(risk*2));
             trailing.setTrailingTarget(target-(risk));
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
         }
-        if(currentPrice<=entry-(risk*3) && trailingCount==2 && risk<30){
-            Trailing trailing = new Trailing();
-            trailing.setTrailingStopLoss(stopLoss-(risk));
-            trailing.setTrailingTarget(target-(risk));
-            trailing.setTrailingCount(trailingCount+1);
-            return trailing;
-        }
-
-        if(currentPrice<=entry-(risk*4) && trailingCount==3 && risk<30){
+        if(currentPrice<=entry-(risk*3) && trailingCount==1 && risk<30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
             trailing.setTrailingTarget(target-(risk));
@@ -147,23 +139,31 @@ public class TrailingStopLossScheduler {
             return trailing;
         }
 
-        if(currentPrice<=entry-(risk) && trailingCount==0 && risk==30){
+        if(currentPrice<=entry-(risk*4) && trailingCount==2 && risk<30){
+            Trailing trailing = new Trailing();
+            trailing.setTrailingStopLoss(stopLoss-(risk));
+            trailing.setTrailingTarget(target-(risk));
+            trailing.setTrailingCount(trailingCount+1);
+            return trailing;
+        }
+
+        /*if(currentPrice<=entry-(risk) && trailingCount==0 && risk==30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
             trailing.setTrailingTarget(target);
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
-        }
+        }*/
 
-        if(currentPrice<=entry-(risk*2) && trailingCount==1 && risk==30){
+        if(currentPrice<=entry-(risk*2) && trailingCount==0 && risk==30){
             Trailing trailing = new Trailing();
-            trailing.setTrailingStopLoss(stopLoss-(risk));
+            trailing.setTrailingStopLoss(stopLoss-(risk*2));
             trailing.setTrailingTarget(target);
             trailing.setTrailingCount(trailingCount+1);
             return trailing;
         }
 
-        if(currentPrice<=entry-(risk*3) && trailingCount==2 && risk==30){
+        if(currentPrice<=entry-(risk*3) && trailingCount==1 && risk==30){
             Trailing trailing = new Trailing();
             trailing.setTrailingStopLoss(stopLoss-(risk));
             trailing.setTrailingTarget(target);
