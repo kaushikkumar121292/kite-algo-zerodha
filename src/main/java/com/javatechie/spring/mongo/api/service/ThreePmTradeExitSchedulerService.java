@@ -80,7 +80,7 @@ public class ThreePmTradeExitSchedulerService {
                 throw new RuntimeException(e);
             }
 
-            if (ceLegLtp >= tradeDetailForThreePm.getCeLegTarget() || ceLegLtp <= tradeDetailForThreePm.getCeLegSl() && tradeDetailForThreePm.getCeLeg()!=null) {
+            if (ceLegLtp >= tradeDetailForThreePm.getCeLegTarget() || ceLegLtp <= tradeDetailForThreePm.getCeLegSl() && tradeDetailForThreePm.getCeLeg().values().iterator().next()!=0) {
                 //place order for exit
                 List<OrderRequest> orderRequests = tradeDetailForThreePm.getOrderRequest().stream()
                         .filter(ce -> ce.getTradingSymbol().endsWith("CE"))
@@ -92,12 +92,13 @@ public class ThreePmTradeExitSchedulerService {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                //update the tradeDetailForThreePm
-                tradeDetailForThreePm.setCeLeg(null);
+                HashMap<String, Double> updateMap = new HashMap<>();
+                updateMap.put(tradeDetailForThreePm.getCeLeg().keySet().iterator().next(),0.0);
+                tradeDetailForThreePm.setPeLeg(updateMap);
                 tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
             }
 
-            if (peLegLtp >= tradeDetailForThreePm.getPeLegTarget() || peLegLtp <= tradeDetailForThreePm.getPeLegSl() && tradeDetailForThreePm.getPeLeg()!=null) {
+            if (peLegLtp >= tradeDetailForThreePm.getPeLegTarget() || peLegLtp <= tradeDetailForThreePm.getPeLegSl() && tradeDetailForThreePm.getPeLeg().values().iterator().next()!=0) {
                 //place order for exit
                 List<OrderRequest> orderRequests = tradeDetailForThreePm.getOrderRequest().stream()
                         .filter(pe -> pe.getTradingSymbol().endsWith("PE"))
@@ -110,11 +111,13 @@ public class ThreePmTradeExitSchedulerService {
                     throw new RuntimeException(e);
                 }
                 //update the tradeDetailForThreePm
-                tradeDetailForThreePm.setPeLeg(null);
+                HashMap<String, Double> updateMap = new HashMap<>();
+                updateMap.put(tradeDetailForThreePm.getPeLeg().keySet().iterator().next(),0.0);
+                tradeDetailForThreePm.setPeLeg(updateMap);
                 tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
 
             }
-            if(tradeDetailForThreePm.getCeLeg()==null && tradeDetailForThreePm.getPeLeg()==null){
+            if(tradeDetailForThreePm.getCeLeg().values().iterator().next()==0 && tradeDetailForThreePm.getPeLeg().values().iterator().next()==0){
                 tradeDetailForThreePm.setActive(false);
             }
         });
