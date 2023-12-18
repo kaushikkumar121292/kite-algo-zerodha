@@ -80,7 +80,7 @@ public class ThreePmTradeExitSchedulerService {
                 throw new RuntimeException(e);
             }
 
-            if ((ceLegLtp >= tradeDetailForThreePm.getCeLegTarget() || ceLegLtp <= tradeDetailForThreePm.getCeLegSl()) && tradeDetailForThreePm.getCeLeg()!=null ) {
+            if (ceLegLtp >= tradeDetailForThreePm.getCeLegTarget() || ceLegLtp <= tradeDetailForThreePm.getCeLegSl() && tradeDetailForThreePm.getCeLeg()!=null) {
                 //place order for exit
                 List<OrderRequest> orderRequests = tradeDetailForThreePm.getOrderRequest().stream()
                         .filter(ce -> ce.getTradingSymbol().endsWith("CE"))

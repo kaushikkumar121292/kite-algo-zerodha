@@ -65,13 +65,13 @@ public class ThreePmSchedulerService {
     private UserDetailRepository userDetailRepository;
 
 
-    @Scheduled(cron = "0 59 14 * * ?")
+    @Scheduled(fixedDelay = 500)
     public void ThreePMSchedulerService() throws Exception {
         List<UserDetail> allUser = getAllUser();
         String masterEncryptedToken = allUser.stream().filter(user -> user.getUserId().equalsIgnoreCase(IJ_6185)).findFirst().get().getEncryptedToken();
         String masterExpiry = allUser.stream().filter(user -> user.getUserId().equalsIgnoreCase(IJ_6185)).findFirst().get().getExpiry();
         double ltp = ltpService.getLtp();
-        if(tradeDetailRepositoryThreePm.findByIsActive(true).isEmpty()){
+        if(!tradeDetailRepositoryThreePm.findByIsActive(true).isEmpty()){
             throw new RuntimeException("there is a active trade based on ThreePMSchedulerService");
         }
         // Create Maps to store option trading symbols and their corresponding last prices
