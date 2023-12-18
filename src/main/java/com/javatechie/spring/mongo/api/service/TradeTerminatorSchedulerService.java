@@ -5,20 +5,17 @@ import com.javatechie.spring.mongo.api.model.TradeDetails;
 import com.javatechie.spring.mongo.api.model.UserDetail;
 import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-public class TradeTerminatorService {
+public class TradeTerminatorSchedulerService {
 
-    private static final Logger logger = Logger.getLogger(TradeTerminatorService.class.getName());
+    private static final Logger logger = Logger.getLogger(TradeTerminatorSchedulerService.class.getName());
 
     @Autowired
     private TradeDetailsService tradeDetailsService;
@@ -38,7 +35,7 @@ public class TradeTerminatorService {
     @Autowired
     private PriceDataInsideCandleService priceDataInsideCandleService;
 
-    @Scheduled(fixedDelay = 500)
+    //@Scheduled(fixedDelay = 500)
     public void terminateTrades() throws IOException {
         Double ltp=ltpService.getLtp();
         List<TradeDetails> activeTrades = tradeDetailsService.getLatestActiveTradeDetails();

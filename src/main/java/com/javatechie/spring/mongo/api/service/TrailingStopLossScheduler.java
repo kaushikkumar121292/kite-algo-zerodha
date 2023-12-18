@@ -22,7 +22,7 @@ public class TrailingStopLossScheduler {
     @Autowired
     private LtpService ltpService;
 
-    @Scheduled(fixedDelay = 500)
+    //@Scheduled(fixedDelay = 500)
     public void startScheduler() throws IOException {
 
         List<UserDetail> allUserDetails = userDetailService.getAllUserDetails();

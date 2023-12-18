@@ -15,7 +15,7 @@ import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
 import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import com.javatechie.spring.mongo.api.service.HistoricalDataService;
 import com.javatechie.spring.mongo.api.service.OrderService;
-import com.javatechie.spring.mongo.api.service.TradeInitiatorService;
+import com.javatechie.spring.mongo.api.service.TradeInitiatorSchedulerService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -60,7 +60,7 @@ public class TradeDetailController {
     private OrderService orderService;
 
     @Autowired
-    private TradeInitiatorService tradeInitiatorService;
+    private TradeInitiatorSchedulerService tradeInitiatorService;
 
     @Autowired
     private  ExtractHighLowFromJSONObjectService extractService;

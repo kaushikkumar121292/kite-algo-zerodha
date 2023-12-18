@@ -59,7 +59,7 @@ public class InsideCandleSchedulerService {
     private LatestInsideCandleService latestInsideCandleService;
 
 
-    @Scheduled(fixedDelay = 500)
+    //@Scheduled(fixedDelay = 500)
     public void markLevelByInsideCandle() throws Exception {
         LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {

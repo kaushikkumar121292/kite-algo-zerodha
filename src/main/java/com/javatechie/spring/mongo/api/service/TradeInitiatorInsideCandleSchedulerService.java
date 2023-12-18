@@ -1,34 +1,27 @@
 package com.javatechie.spring.mongo.api.service;
 
-import com.javatechie.spring.mongo.api.model.OrderRequest;
-import com.javatechie.spring.mongo.api.model.PriceDataTraffic;
-import com.javatechie.spring.mongo.api.model.TradeDetails;
-import com.javatechie.spring.mongo.api.model.UserDetail;
+import com.javatechie.spring.mongo.api.model.*;
 import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.scheduling.annotation.Scheduled;
-
 @Service
-public class TradeInitiatorService {
+public class TradeInitiatorInsideCandleSchedulerService {
 
-    private static final Logger logger = Logger.getLogger(TradeInitiatorService.class.getName());
+    private static final Logger logger = Logger.getLogger(TradeInitiatorInsideCandleSchedulerService.class.getName());
 
     @Autowired
-    private PriceDataService priceDataService;
+    private  PriceDataInsideCandleService priceDataInsideCandleService;
 
     @Autowired
     private LtpService ltpService;
@@ -61,10 +54,9 @@ public class TradeInitiatorService {
                 for (UserDetail user : users) {
                     try {
                         if(user.getMaxTradesPerDay()==user.getTradeCountOfDay()){
-                            priceDataService.deleteAllPriceData();
+                            priceDataInsideCandleService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }
-
                         List<OrderRequest> orderRequests=null;
                         if(user.getOptionStrategy().equalsIgnoreCase("BULL_PUT_SPREAD_OR_BEAR_CALL_SPREAD")){
                             orderRequests = getOrderRequestBullPutSpreadOrBearCallSpread(ltp, flag, user);
@@ -91,7 +83,7 @@ public class TradeInitiatorService {
                 for (UserDetail user : users) {
                     try {
                         if(user.getMaxTradesPerDay()==user.getTradeCountOfDay()){
-                            priceDataService.deleteAllPriceData();
+                            priceDataInsideCandleService.deleteAllPriceData();
                             throw new RuntimeException("you have reached maximum number of trades allowed per day");
                         }
                         List<OrderRequest> orderRequests=null;
@@ -247,7 +239,6 @@ public class TradeInitiatorService {
         return orderRequests;
     }
 
-
     private void setTargetAndSLforShort(Double highValueMarkedLevel,Double lowValueMarkedLevel, UserDetail user, List<OrderRequest> orderRequests) throws IOException {
         Double entry = ltpService.getLtp();
         TradeDetails tradeDetails = new TradeDetails();
@@ -295,9 +286,9 @@ public class TradeInitiatorService {
     }
 
     public Double getHighValue() {
-        ResponseEntity<PriceDataTraffic> response = priceDataService.getLatestPriceData();
+        ResponseEntity<PriceDataInsideCandle> response = priceDataInsideCandleService.getLatestPriceData();
         if (response.getStatusCode().is2xxSuccessful()) {
-            PriceDataTraffic latestPriceData = response.getBody();
+            PriceDataInsideCandle latestPriceData = response.getBody();
             if (latestPriceData != null) {
                 return latestPriceData.getHigh();
             }
@@ -307,9 +298,9 @@ public class TradeInitiatorService {
     }
 
     public Double getLowValue() {
-        ResponseEntity<PriceDataTraffic> response = priceDataService.getLatestPriceData();
+        ResponseEntity<PriceDataInsideCandle> response = priceDataInsideCandleService.getLatestPriceData();
         if (response.getStatusCode().is2xxSuccessful()) {
-            PriceDataTraffic latestPriceData = response.getBody();
+            PriceDataInsideCandle latestPriceData = response.getBody();
             if (latestPriceData != null) {
                 return latestPriceData.getLow();
             }
