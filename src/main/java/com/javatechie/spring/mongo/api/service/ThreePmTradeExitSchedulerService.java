@@ -119,6 +119,7 @@ public class ThreePmTradeExitSchedulerService {
             }
             if(tradeDetailForThreePm.getCeLeg().values().iterator().next()==0 && tradeDetailForThreePm.getPeLeg().values().iterator().next()==0){
                 tradeDetailForThreePm.setActive(false);
+                tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
             }
         });
 
