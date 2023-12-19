@@ -92,9 +92,9 @@ public class ThreePmTradeExitSchedulerService {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                HashMap<String, Double> updateMap = new HashMap<>();
-                updateMap.put(tradeDetailForThreePm.getCeLeg().keySet().iterator().next(),0.0);
-                tradeDetailForThreePm.setPeLeg(updateMap);
+                HashMap<String, Double> updateCeMap = new HashMap<>();
+                updateCeMap.put(tradeDetailForThreePm.getCeLeg().keySet().iterator().next(),0.0);
+                tradeDetailForThreePm.setCeLeg(updateCeMap);
                 tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
             }
 
@@ -111,9 +111,9 @@ public class ThreePmTradeExitSchedulerService {
                     throw new RuntimeException(e);
                 }
                 //update the tradeDetailForThreePm
-                HashMap<String, Double> updateMap = new HashMap<>();
-                updateMap.put(tradeDetailForThreePm.getPeLeg().keySet().iterator().next(),0.0);
-                tradeDetailForThreePm.setPeLeg(updateMap);
+                HashMap<String, Double> updatePeMap = new HashMap<>();
+                updatePeMap.put(tradeDetailForThreePm.getPeLeg().keySet().iterator().next(),0.0);
+                tradeDetailForThreePm.setPeLeg(updatePeMap);
                 tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
 
             }
