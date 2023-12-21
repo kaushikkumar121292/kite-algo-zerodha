@@ -173,8 +173,14 @@ public class ThreePmSchedulerService {
                             .build());
 
                     try {
+
+                        if(userDetail.getMaxTradesPerDay()==userDetail.getTradeCountOfDay()){
+                            throw new RuntimeException("you have reached maximum number of trades allowed per day");
+                        }
+
                         orderService.placeOrder(orderRequests.get(0),userDetail);
                         orderService.placeOrder(orderRequests.get(1),userDetail);
+                        userDetail.setTradeCountOfDay(userDetail.getTradeCountOfDay()+1);
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
                                 .builder()
                                 .ceLeg(filteredCeOptionsMap)
@@ -189,6 +195,10 @@ public class ThreePmSchedulerService {
                                 .userId(userDetail.getUserId())
                                 .isActive(true)
                                 .build());
+
+                        userDetailRepository.save(userDetail);
+
+
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
