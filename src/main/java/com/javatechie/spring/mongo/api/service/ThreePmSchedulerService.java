@@ -65,7 +65,7 @@ public class ThreePmSchedulerService {
     private UserDetailRepository userDetailRepository;
 
 
-    @Scheduled(fixedDelay = 500)
+    @Scheduled(fixedDelay = 200)
     public void ThreePMSchedulerService() throws Exception {
         List<UserDetail> allUser = getAllUser();
         String masterEncryptedToken = allUser.stream().filter(user -> user.getUserId().equalsIgnoreCase(IJ_6185)).findFirst().get().getEncryptedToken();
@@ -180,7 +180,6 @@ public class ThreePmSchedulerService {
 
                         orderService.placeOrder(orderRequests.get(0),userDetail);
                         orderService.placeOrder(orderRequests.get(1),userDetail);
-                        userDetail.setTradeCountOfDay(userDetail.getTradeCountOfDay()+1);
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
                                 .builder()
                                 .ceLeg(filteredCeOptionsMap)
@@ -195,7 +194,7 @@ public class ThreePmSchedulerService {
                                 .userId(userDetail.getUserId())
                                 .isActive(true)
                                 .build());
-
+                        userDetail.setTradeCountOfDay(userDetail.getTradeCountOfDay()+1);
                         userDetailRepository.save(userDetail);
 
 

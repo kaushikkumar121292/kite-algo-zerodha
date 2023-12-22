@@ -64,7 +64,7 @@ public class ThreePmTradeExitSchedulerService {
     private UserDetailRepository userDetailRepository;
 
 
-    @Scheduled(fixedDelay = 500)
+    @Scheduled(fixedDelay = 200)
     public void threePmTradeExitTask() {
         List<TradeDetailForThreePm> byIsActive = tradeDetailRepositoryThreePm.findByIsActive(true);
         if (byIsActive.isEmpty()) {
