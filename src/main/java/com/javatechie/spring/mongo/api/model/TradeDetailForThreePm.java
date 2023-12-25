@@ -28,5 +28,8 @@ public class TradeDetailForThreePm {
     private List<OrderRequest> orderRequest;
     private boolean isActive;
     private String userId;
+    private boolean isSuccess;
+    private String dateTime;
+    private String date;
 
 }

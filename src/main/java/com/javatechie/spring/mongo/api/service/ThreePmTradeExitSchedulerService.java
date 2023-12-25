@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -66,6 +68,10 @@ public class ThreePmTradeExitSchedulerService {
 
     @Scheduled(fixedDelay = 200)
     public void threePmTradeExitTask() {
+        LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+        if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
+            throw new IllegalStateException("Trading only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
+        }
         List<TradeDetailForThreePm> byIsActive = tradeDetailRepositoryThreePm.findByIsActive(true);
         if (byIsActive.isEmpty()) {
             throw new RuntimeException("there is no threePmTradeExitTask found");
@@ -80,8 +86,9 @@ public class ThreePmTradeExitSchedulerService {
                 throw new RuntimeException(e);
             }
 
-            if (ceLegLtp >= tradeDetailForThreePm.getCeLegTarget() || ceLegLtp <= tradeDetailForThreePm.getCeLegSl() && tradeDetailForThreePm.getCeLeg().values().iterator().next()!=0) {
-                //place order for exit
+            // Check for the stop-loss condition
+            if (ceLegLtp <= tradeDetailForThreePm.getCeLegSl() && tradeDetailForThreePm.getCeLeg().values().iterator().next() != 0) {
+                // Place order for exit
                 List<OrderRequest> orderRequests = tradeDetailForThreePm.getOrderRequest().stream()
                         .filter(ce -> ce.getTradingSymbol().endsWith("CE"))
                         .collect(Collectors.toList());
@@ -92,14 +99,41 @@ public class ThreePmTradeExitSchedulerService {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+
+                // Update CE leg to indicate exit
                 HashMap<String, Double> updateCeMap = new HashMap<>();
-                updateCeMap.put(tradeDetailForThreePm.getCeLeg().keySet().iterator().next(),0.0);
+                updateCeMap.put(tradeDetailForThreePm.getCeLeg().keySet().iterator().next(), 0.0);
                 tradeDetailForThreePm.setCeLeg(updateCeMap);
+                tradeDetailForThreePm.setSuccess(false);
                 tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
             }
 
-            if (peLegLtp >= tradeDetailForThreePm.getPeLegTarget() || peLegLtp <= tradeDetailForThreePm.getPeLegSl() && tradeDetailForThreePm.getPeLeg().values().iterator().next()!=0) {
-                //place order for exit
+               // Check for the target condition
+            if (ceLegLtp >= tradeDetailForThreePm.getCeLegTarget() && tradeDetailForThreePm.getCeLeg().values().iterator().next() != 0) {
+                // Place order for exit
+                List<OrderRequest> orderRequests = tradeDetailForThreePm.getOrderRequest().stream()
+                        .filter(ce -> ce.getTradingSymbol().endsWith("CE"))
+                        .collect(Collectors.toList());
+                OrderRequest ceLeg = orderRequests.get(0);
+                ceLeg.setTransactionType("SELL");
+                try {
+                    orderService.placeOrder(ceLeg, userDetailRepository.findById(tradeDetailForThreePm.getUserId()).get());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // Update CE leg to indicate exit
+                HashMap<String, Double> updateCeMap = new HashMap<>();
+                updateCeMap.put(tradeDetailForThreePm.getCeLeg().keySet().iterator().next(), 0.0);
+                tradeDetailForThreePm.setCeLeg(updateCeMap);
+                tradeDetailForThreePm.setSuccess(true);
+                tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
+            }
+
+
+            // Check for the stop-loss condition for PE leg
+            if (peLegLtp <= tradeDetailForThreePm.getPeLegSl() && tradeDetailForThreePm.getPeLeg().values().iterator().next() != 0) {
+                // Place order for exit
                 List<OrderRequest> orderRequests = tradeDetailForThreePm.getOrderRequest().stream()
                         .filter(pe -> pe.getTradingSymbol().endsWith("PE"))
                         .collect(Collectors.toList());
@@ -110,13 +144,37 @@ public class ThreePmTradeExitSchedulerService {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                //update the tradeDetailForThreePm
-                HashMap<String, Double> updatePeMap = new HashMap<>();
-                updatePeMap.put(tradeDetailForThreePm.getPeLeg().keySet().iterator().next(),0.0);
-                tradeDetailForThreePm.setPeLeg(updatePeMap);
-                tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
 
+                // Update PE leg to indicate exit
+                HashMap<String, Double> updatePeMap = new HashMap<>();
+                updatePeMap.put(tradeDetailForThreePm.getPeLeg().keySet().iterator().next(), 0.0);
+                tradeDetailForThreePm.setPeLeg(updatePeMap);
+                tradeDetailForThreePm.setSuccess(false);
+                tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
             }
+
+               // Check for the target condition for PE leg
+            if (peLegLtp >= tradeDetailForThreePm.getPeLegTarget() && tradeDetailForThreePm.getPeLeg().values().iterator().next() != 0) {
+                // Place order for exit
+                List<OrderRequest> orderRequests = tradeDetailForThreePm.getOrderRequest().stream()
+                        .filter(pe -> pe.getTradingSymbol().endsWith("PE"))
+                        .collect(Collectors.toList());
+                OrderRequest peLeg = orderRequests.get(0);
+                peLeg.setTransactionType("SELL");
+                try {
+                    orderService.placeOrder(peLeg, userDetailRepository.findById(tradeDetailForThreePm.getUserId()).get());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // Update PE leg to indicate exit
+                HashMap<String, Double> updatePeMap = new HashMap<>();
+                updatePeMap.put(tradeDetailForThreePm.getPeLeg().keySet().iterator().next(), 0.0);
+                tradeDetailForThreePm.setPeLeg(updatePeMap);
+                tradeDetailForThreePm.setSuccess(true);
+                tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);
+            }
+
             if(tradeDetailForThreePm.getCeLeg().values().iterator().next()==0 && tradeDetailForThreePm.getPeLeg().values().iterator().next()==0){
                 tradeDetailForThreePm.setActive(false);
                 tradeDetailRepositoryThreePm.save(tradeDetailForThreePm);

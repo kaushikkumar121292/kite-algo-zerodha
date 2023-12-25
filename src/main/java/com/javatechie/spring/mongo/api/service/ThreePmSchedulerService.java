@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -67,11 +67,15 @@ public class ThreePmSchedulerService {
 
     @Scheduled(fixedDelay = 200)
     public void ThreePMSchedulerService() throws Exception {
+        LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+        if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
+            throw new IllegalStateException("Trading only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
+        }
         List<UserDetail> allUser = getAllUser();
         String masterEncryptedToken = allUser.stream().filter(user -> user.getUserId().equalsIgnoreCase(IJ_6185)).findFirst().get().getEncryptedToken();
         String masterExpiry = allUser.stream().filter(user -> user.getUserId().equalsIgnoreCase(IJ_6185)).findFirst().get().getExpiry();
         double ltp = ltpService.getLtp();
-        if(!tradeDetailRepositoryThreePm.findByIsActive(true).isEmpty()){
+        if (!tradeDetailRepositoryThreePm.findByIsActive(true).isEmpty()) {
             throw new RuntimeException("there is a active trade based on ThreePMSchedulerService");
         }
         // Create Maps to store option trading symbols and their corresponding last prices
@@ -173,13 +177,9 @@ public class ThreePmSchedulerService {
                             .build());
 
                     try {
-
-                        if(userDetail.getMaxTradesPerDay()==userDetail.getTradeCountOfDay()){
-                            throw new RuntimeException("you have reached maximum number of trades allowed per day");
-                        }
-
-                        orderService.placeOrder(orderRequests.get(0),userDetail);
-                        orderService.placeOrder(orderRequests.get(1),userDetail);
+                        stopTradingException(userDetail);
+                        orderService.placeOrder(orderRequests.get(0), userDetail);
+                        orderService.placeOrder(orderRequests.get(1), userDetail);
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
                                 .builder()
                                 .ceLeg(filteredCeOptionsMap)
@@ -193,10 +193,9 @@ public class ThreePmSchedulerService {
                                 .orderRequest(orderRequests)
                                 .userId(userDetail.getUserId())
                                 .isActive(true)
+                                .dateTime(LocalDateTime.now(ZoneId.of("Asia/Kolkata")).toString())
+                                .date(LocalDate.now().toString())
                                 .build());
-                        userDetail.setTradeCountOfDay(userDetail.getTradeCountOfDay()+1);
-                        userDetailRepository.save(userDetail);
-
 
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -205,8 +204,20 @@ public class ThreePmSchedulerService {
 
             });
         }
+    }
 
-
+    private void stopTradingException(UserDetail userDetail) {
+        List<TradeDetailForThreePm> successTradeListForToday = tradeDetailRepositoryThreePm.findByDateAndIsSuccessAndIsActiveAndUserId(LocalDate.now().toString(), true, false, userDetail.getUserId());
+        List<TradeDetailForThreePm> unsuccessTradeListForToday = tradeDetailRepositoryThreePm.findByDateAndIsSuccessAndIsActiveAndUserId(LocalDate.now().toString(), false, false, userDetail.getUserId());
+        double investedCapital = Double.parseDouble(userDetail.getQuantity()) * 160 * 2;
+        double dayTarget = (investedCapital * 21) / 100;
+        double dayLossCapacity = (investedCapital * 10) / 100;
+        double currentProfit = successTradeListForToday.stream().count() * Double.parseDouble(userDetail.getQuantity()) * 15;
+        double currentLoss = unsuccessTradeListForToday.stream().count() * Double.parseDouble(userDetail.getQuantity()) * 10;
+        double netProfitOrLoss = currentProfit - currentLoss;
+        if (netProfitOrLoss >= dayTarget || netProfitOrLoss <= dayLossCapacity) {
+            throw new RuntimeException("Profit target or loss capacity reached for the day");
+        }
     }
 
     private static String generateTradingSymbol(String underlyingTradingSymbol, String expiry, double strikePrice, String optionType) {
