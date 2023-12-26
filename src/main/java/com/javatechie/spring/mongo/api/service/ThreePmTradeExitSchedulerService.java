@@ -66,7 +66,7 @@ public class ThreePmTradeExitSchedulerService {
     private UserDetailRepository userDetailRepository;
 
 
-    @Scheduled(fixedDelay = 200)
+    @Scheduled(fixedDelay = 100)
     public void threePmTradeExitTask() {
         LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {

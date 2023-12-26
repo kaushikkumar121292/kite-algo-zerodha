@@ -65,7 +65,7 @@ public class ThreePmSchedulerService {
     private UserDetailRepository userDetailRepository;
 
 
-    @Scheduled(fixedDelay = 200)
+    @Scheduled(fixedDelay = 100)
     public void ThreePMSchedulerService() throws Exception {
        /* LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
