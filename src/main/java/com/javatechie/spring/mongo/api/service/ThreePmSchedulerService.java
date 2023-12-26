@@ -67,10 +67,10 @@ public class ThreePmSchedulerService {
 
     @Scheduled(fixedDelay = 100)
     public void ThreePMSchedulerService() throws Exception {
-       /* LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+        LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
         if (currentTime.isBefore(LocalTime.of(9, 15)) || currentTime.isAfter(LocalTime.of(15, 31))) {
             throw new IllegalStateException("Trading only allowed during Indian trading hours (9:15 AM to 3:30 PM).");
-        }*/
+        }
         List<UserDetail> allUser = getAllUser();
         String masterEncryptedToken = allUser.stream().filter(user -> user.getUserId().equalsIgnoreCase(IJ_6185)).findFirst().get().getEncryptedToken();
         String masterExpiry = allUser.stream().filter(user -> user.getUserId().equalsIgnoreCase(IJ_6185)).findFirst().get().getExpiry();
