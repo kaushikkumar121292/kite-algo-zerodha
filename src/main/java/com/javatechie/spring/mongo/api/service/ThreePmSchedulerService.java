@@ -177,7 +177,7 @@ public class ThreePmSchedulerService {
                             .build());
 
                     try {
-                        stopTradingException(userDetail);
+  //                      stopTradingException(userDetail);
                         orderService.placeOrder(orderRequests.get(0), userDetail);
                         orderService.placeOrder(orderRequests.get(1), userDetail);
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
