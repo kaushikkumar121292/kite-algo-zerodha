@@ -106,7 +106,7 @@ public class ThreePmSchedulerService {
                     }
                 });
         Map<String, Double> filteredPeOptionsMap = peOptionsMap.entrySet().stream()
-                .filter(entry -> entry.getValue() >= 170 && entry.getValue() <= 180)
+                .filter(entry -> entry.getValue() >= 150 && entry.getValue() <= 160)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         // Select the entry with the lowest value if there are multiple entries
         if (filteredPeOptionsMap.size() > 1) {
@@ -121,7 +121,7 @@ public class ThreePmSchedulerService {
 
 
         Map<String, Double> filteredCeOptionsMap = ceOptionsMap.entrySet().stream()
-                .filter(entry -> entry.getValue() >= 170 && entry.getValue() <= 180)
+                .filter(entry -> entry.getValue() >= 150 && entry.getValue() <= 160)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         // Select the entry with the lowest value if there are multiple entries
@@ -135,6 +135,7 @@ public class ThreePmSchedulerService {
                 filteredCeOptionsMap.put(entry.getKey(), entry.getValue());
             });
         }
+
 
 
         if (!filteredCeOptionsMap.isEmpty() && !filteredPeOptionsMap.isEmpty()) {
@@ -177,7 +178,7 @@ public class ThreePmSchedulerService {
                             .build());
 
                     try {
-  //                      stopTradingException(userDetail);
+                        stopTradingException(userDetail);
                         orderService.placeOrder(orderRequests.get(0), userDetail);
                         orderService.placeOrder(orderRequests.get(1), userDetail);
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
@@ -215,8 +216,11 @@ public class ThreePmSchedulerService {
         double currentProfit = successTradeListForToday.stream().count() * Double.parseDouble(userDetail.getQuantity()) * 15;
         double currentLoss = unsuccessTradeListForToday.stream().count() * Double.parseDouble(userDetail.getQuantity()) * 10;
         double netProfitOrLoss = currentProfit - currentLoss;
-        if (netProfitOrLoss >= dayTarget || netProfitOrLoss <= dayLossCapacity) {
-            throw new RuntimeException("Profit target or loss capacity reached for the day");
+        if (netProfitOrLoss >= dayTarget) {
+            throw new RuntimeException("Profit target reached");
+        }
+        if (netProfitOrLoss <= dayLossCapacity*(-1)) {
+            throw new RuntimeException("Loss capacity reached");
         }
     }
 
@@ -273,6 +277,7 @@ public class ThreePmSchedulerService {
         // Handle the case when the structure is not as expected
         return Double.NaN;
     }
+
     private List<UserDetail> getAllUser() {
         List<UserDetail> userDetailList = userDetailRepository.findAll();
         if (!userDetailList.isEmpty()) {
