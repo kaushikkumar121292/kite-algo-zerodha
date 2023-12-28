@@ -106,7 +106,7 @@ public class ThreePmSchedulerService {
                     }
                 });
         Map<String, Double> filteredPeOptionsMap = peOptionsMap.entrySet().stream()
-                .filter(entry -> entry.getValue() >= 150 && entry.getValue() <= 160)
+                .filter(entry -> entry.getValue() >= 180 && entry.getValue() <= 190)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         // Select the entry with the lowest value if there are multiple entries
         if (filteredPeOptionsMap.size() > 1) {
@@ -121,7 +121,7 @@ public class ThreePmSchedulerService {
 
 
         Map<String, Double> filteredCeOptionsMap = ceOptionsMap.entrySet().stream()
-                .filter(entry -> entry.getValue() >= 150 && entry.getValue() <= 160)
+                .filter(entry -> entry.getValue() >= 180 && entry.getValue() <= 190)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         // Select the entry with the lowest value if there are multiple entries
