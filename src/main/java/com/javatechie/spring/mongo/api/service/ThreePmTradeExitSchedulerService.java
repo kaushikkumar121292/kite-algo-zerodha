@@ -94,6 +94,7 @@ public class ThreePmTradeExitSchedulerService {
                         .collect(Collectors.toList());
                 OrderRequest ceLeg = orderRequests.get(0);
                 ceLeg.setTransactionType("SELL");
+                ceLeg.setPrice(String.valueOf(ceLegLtp));
                 try {
                     orderService.placeOrder(ceLeg, userDetailRepository.findById(tradeDetailForThreePm.getUserId()).get());
                 } catch (IOException e) {
@@ -116,6 +117,7 @@ public class ThreePmTradeExitSchedulerService {
                         .collect(Collectors.toList());
                 OrderRequest ceLeg = orderRequests.get(0);
                 ceLeg.setTransactionType("SELL");
+                ceLeg.setPrice(String.valueOf(ceLegLtp));
                 try {
                     orderService.placeOrder(ceLeg, userDetailRepository.findById(tradeDetailForThreePm.getUserId()).get());
                 } catch (IOException e) {
@@ -139,6 +141,7 @@ public class ThreePmTradeExitSchedulerService {
                         .collect(Collectors.toList());
                 OrderRequest peLeg = orderRequests.get(0);
                 peLeg.setTransactionType("SELL");
+                peLeg.setPrice(String.valueOf(peLegLtp));
                 try {
                     orderService.placeOrder(peLeg, userDetailRepository.findById(tradeDetailForThreePm.getUserId()).get());
                 } catch (IOException e) {
@@ -161,6 +164,7 @@ public class ThreePmTradeExitSchedulerService {
                         .collect(Collectors.toList());
                 OrderRequest peLeg = orderRequests.get(0);
                 peLeg.setTransactionType("SELL");
+                peLeg.setPrice(String.valueOf(peLegLtp));
                 try {
                     orderService.placeOrder(peLeg, userDetailRepository.findById(tradeDetailForThreePm.getUserId()).get());
                 } catch (IOException e) {
