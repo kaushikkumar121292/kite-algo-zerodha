@@ -14,6 +14,7 @@ import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.BufferedReader;
