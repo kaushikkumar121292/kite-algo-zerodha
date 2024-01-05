@@ -6,6 +6,7 @@ import com.javatechie.spring.mongo.api.model.UserDetail;
 import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
 import com.javatechie.spring.mongo.api.repository.TradeDetailRepositoryThreePm;
 import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -147,9 +148,9 @@ public class ThreePmSchedulerService {
                             .exchange("NFO")
                             .tradingSymbol(filteredCeOptionsMap.entrySet().stream().findFirst().get().getKey())
                             .transactionType("BUY")
-                            .orderType("LIMIT")
+                            .orderType("MARKET")
                             .quantity(userDetail.getQuantity())
-                            .price(filteredCeOptionsMap.entrySet().stream().findFirst().get().getValue().toString())
+                            .price("0")
                             .product(userDetail.getProduct())
                             .validity("DAY")
                             .disclosedQuantity("0")
@@ -164,9 +165,9 @@ public class ThreePmSchedulerService {
                             .exchange("NFO")
                             .tradingSymbol(filteredPeOptionsMap.entrySet().stream().findFirst().get().getKey())
                             .transactionType("BUY")
-                            .orderType("LIMIT")
+                            .orderType("MARKET")
                             .quantity(userDetail.getQuantity())
-                            .price(filteredPeOptionsMap.entrySet().stream().findFirst().get().getValue().toString())
+                            .price("0")
                             .product(userDetail.getProduct())
                             .validity("DAY")
                             .disclosedQuantity("0")
@@ -179,8 +180,19 @@ public class ThreePmSchedulerService {
 
                     try {
                         stopTradingException(userDetail);
-                        orderService.placeOrder(orderRequests.get(0), userDetail);
-                        orderService.placeOrder(orderRequests.get(1), userDetail);
+
+                        String jsonDataForCeLeg = getOrderDetails(orderService.placeOrder(orderRequests.get(0), userDetail), masterEncryptedToken);
+
+                        String jsonDataForPeLeg =getOrderDetails(orderService.placeOrder(orderRequests.get(1), userDetail), masterEncryptedToken);
+
+                        if(getExecutedPrice(jsonDataForCeLeg) != 0.0 && getExecutedPrice(jsonDataForPeLeg) != 0.0){
+
+                            filteredCeOptionsMap.put(filteredCeOptionsMap.entrySet().stream().findFirst().get().getKey(),getExecutedPrice(jsonDataForCeLeg));
+
+                            filteredPeOptionsMap.put(filteredPeOptionsMap.entrySet().stream().findFirst().get().getKey(),getExecutedPrice(jsonDataForPeLeg));
+
+                        }
+
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
                                 .builder()
                                 .ceLeg(filteredCeOptionsMap)
@@ -205,6 +217,17 @@ public class ThreePmSchedulerService {
 
             });
         }
+    }
+
+    private static double getExecutedPrice(String jsonData) {
+        // Parse the JSON data
+        JSONObject jsonObject = new JSONObject(jsonData);
+
+        // Get the "data" array
+        JSONArray dataArray = jsonObject.getJSONArray("data");
+
+        // Get averagePrice for the first order with "COMPLETE" status
+        return getAveragePriceForStatus(dataArray, "COMPLETE");
     }
 
     private void stopTradingException(UserDetail userDetail) {
@@ -284,6 +307,69 @@ public class ThreePmSchedulerService {
             return userDetailList;
         } else {
             return null;
+        }
+    }
+
+
+    private static double getAveragePriceForStatus(JSONArray dataArray, String targetStatus) {
+        for (int i = 0; i < dataArray.length(); i++) {
+            JSONObject order = dataArray.getJSONObject(i);
+
+            // Check if the order status matches the targetStatus
+            if (targetStatus.equals(order.getString("status"))) {
+                // Retrieve and return the "average_price"
+                return order.getDouble("average_price");
+            }
+        }
+
+        // Return a default value if no matching status is found
+        return 0.0;
+    }
+
+
+
+    public static String getOrderDetails(String orderId, String encToken) {
+        try {
+            // Replace the URL with the actual API endpoint
+            String apiUrl = "https://api.kite.trade/orders/" + orderId;
+
+            // Create URL object
+            URL url = new URL(apiUrl);
+
+            // Open connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Set request method
+            connection.setRequestMethod("GET");
+
+            connection.setRequestProperty("X-Kite-Version", "3");
+
+            // Set request headers
+            connection.setRequestProperty("Authorization", "enctoken " + encToken);
+
+            // Get response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // Read response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            StringBuffer response = new StringBuffer();
+
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            // Close connection
+            connection.disconnect();
+
+            // Return the response as a string
+            return response.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Handle error appropriately in your application
         }
     }
 

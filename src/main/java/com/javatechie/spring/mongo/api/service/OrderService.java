@@ -1,10 +1,13 @@
 package com.javatechie.spring.mongo.api.service;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.javatechie.spring.mongo.api.model.UserDetail;
 import com.javatechie.spring.mongo.api.repository.OrderRequestRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.javatechie.spring.mongo.api.model.OrderRequest;
@@ -15,7 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -49,30 +56,41 @@ public class OrderService {
                 "&trailing_stoploss=" + orderRequest.getTrailingStoploss() +
                 "&user_id=" + orderRequest.getUserId();
 
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        con.setRequestMethod("POST");
-        con.setRequestProperty("X-Kite-Version", "3");
-        con.setRequestProperty("Authorization", "enctoken " + encToken);
-        con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        // Create an HTTP client
+        HttpClient client = HttpClient.newHttpClient();
 
-        // Send the POST request
-        con.setDoOutput(true);
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = formData.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
-        }
+        // Build the request
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("X-Kite-Version", "3")
+                .header("Authorization", "enctoken " + encToken)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(formData))
+                .build();
 
-        int responseCode = con.getResponseCode();
+        try {
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            response.body();
 
-        // Read the response
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+            // Check the response code for success
+            if (response.statusCode() == 200) {
+
+                JsonParser jsonParser = new JsonParser();
+
+                JsonObject jsonResponse = jsonParser.parse(response.body().toString()).getAsJsonObject();;
+
+                // Extract the "order_id" from the "data" object
+                return jsonResponse.getAsJsonObject("data").get("order_id").getAsString();
+
+            } else {
+                // Handle error cases based on the response code and body
+                String errorMessage = response.body();
+                throw new RuntimeException("Failed to place order. Response code: " + response.statusCode() + ", Error: " + errorMessage);
             }
-            return "Order placed successfully";
+        } catch (Exception e) {
+            // Handle exceptions appropriately
+            throw new RuntimeException("Error placing order: " + e.getMessage(), e);
         }
     }
 
