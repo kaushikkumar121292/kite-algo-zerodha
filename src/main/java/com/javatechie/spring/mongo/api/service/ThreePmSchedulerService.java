@@ -181,9 +181,9 @@ public class ThreePmSchedulerService {
                     try {
                         stopTradingException(userDetail);
 
-                        String jsonDataForCeLeg = getOrderDetails(orderService.placeOrder(orderRequests.get(0), userDetail), masterEncryptedToken);
+                        String jsonDataForCeLeg = getOrderDetails(orderService.placeOrder(orderRequests.get(0), userDetail), userDetail.getEncryptedToken());
 
-                        String jsonDataForPeLeg =getOrderDetails(orderService.placeOrder(orderRequests.get(1), userDetail), masterEncryptedToken);
+                        String jsonDataForPeLeg =getOrderDetails(orderService.placeOrder(orderRequests.get(1), userDetail), userDetail.getEncryptedToken());
 
                         if(getExecutedPrice(jsonDataForCeLeg) != 0.0 && getExecutedPrice(jsonDataForPeLeg) != 0.0){
 
