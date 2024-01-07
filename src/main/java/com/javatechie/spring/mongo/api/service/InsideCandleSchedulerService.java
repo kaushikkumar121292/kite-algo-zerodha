@@ -56,7 +56,7 @@ public class InsideCandleSchedulerService {
     private PriceDataInsideCandleService priceDataService;
 
     @Autowired
-    private LatestInsideCandleService latestInsideCandleService;
+    private CandleService latestInsideCandleService;
 
 
     //@Scheduled(fixedDelay = 500)
@@ -140,7 +140,7 @@ public class InsideCandleSchedulerService {
         priceDataService.deleteAllPriceData();
     }
 
-    @Scheduled(fixedDelay = 500)
+    //@Scheduled(fixedDelay = 500)
     public void checkCandleClosed() throws Exception {
         ZoneId zoneId = ZoneId.of("Asia/Kolkata");
         String instrumentToken = "256265";

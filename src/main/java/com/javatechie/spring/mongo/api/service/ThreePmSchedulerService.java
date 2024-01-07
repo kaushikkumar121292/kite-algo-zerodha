@@ -1,8 +1,6 @@
 package com.javatechie.spring.mongo.api.service;
 
-import com.javatechie.spring.mongo.api.model.OrderRequest;
-import com.javatechie.spring.mongo.api.model.TradeDetailForThreePm;
-import com.javatechie.spring.mongo.api.model.UserDetail;
+import com.javatechie.spring.mongo.api.model.*;
 import com.javatechie.spring.mongo.api.repository.PriceDataRepository;
 import com.javatechie.spring.mongo.api.repository.TradeDetailRepositoryThreePm;
 import com.javatechie.spring.mongo.api.repository.UserDetailRepository;
@@ -21,6 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -65,6 +64,8 @@ public class ThreePmSchedulerService {
     @Autowired
     private UserDetailRepository userDetailRepository;
 
+    @Autowired
+    private CandleService candleService;
 
     @Scheduled(fixedDelay = 100)
     public void ThreePMSchedulerService() throws Exception {
@@ -82,6 +83,7 @@ public class ThreePmSchedulerService {
         // Create Maps to store option trading symbols and their corresponding last prices
         Map<String, Double> peOptionsMap = new HashMap<>();
         Map<String, Double> ceOptionsMap = new HashMap<>();
+
         // Fetch 10 nearest option data
         IntStream.rangeClosed(-5, 4)
                 .forEach(i -> {
@@ -91,17 +93,17 @@ public class ThreePmSchedulerService {
 
                     try {
                         String peOptionsData = fetchOptionsData(INSTRUMENT_EXCHANGE, peTradingSymbol, masterEncryptedToken);
-                        double peLastPrice = parseLastPrice(peOptionsData);
+                        Map<Integer, Double> peIntegerDoubleMap = parseLastPrice(peOptionsData);
                         // Put the PE option trading symbol and last price into the map
-                        peOptionsMap.put(peTradingSymbol, peLastPrice);
+                        peOptionsMap.put(peTradingSymbol, peIntegerDoubleMap.entrySet().stream().findFirst().get().getValue());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     try {
                         String ceOptionsData = fetchOptionsData(INSTRUMENT_EXCHANGE, ceTradingSymbol, masterEncryptedToken);
-                        double ceLastPrice = parseLastPrice(ceOptionsData);
+                        Map<Integer, Double> ceIntegerDoubleMap = parseLastPrice(ceOptionsData);
                         // Put the CE option trading symbol and last price into the map
-                        ceOptionsMap.put(ceTradingSymbol, ceLastPrice);
+                        ceOptionsMap.put(ceTradingSymbol, ceIntegerDoubleMap.entrySet().stream().findFirst().get().getValue());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -193,6 +195,16 @@ public class ThreePmSchedulerService {
 
                         }
 
+
+                        String ceOptionsDataForSnapshot = fetchOptionsData(INSTRUMENT_EXCHANGE, filteredCeOptionsMap.entrySet().stream().findFirst().get().getKey(), masterEncryptedToken);
+                        Map<Integer, Double> ceIntegerDoubleSnapshotMap = parseLastPrice(ceOptionsDataForSnapshot);
+                        String peOptionsDataForSnapshot = fetchOptionsData(INSTRUMENT_EXCHANGE, filteredPeOptionsMap.entrySet().stream().findFirst().get().getKey(), masterEncryptedToken);
+                        Map<Integer, Double> peIntegerDoubleSnapshotMap = parseLastPrice(peOptionsDataForSnapshot);
+
+
+                        Candle ceCandle = getOptionCandle(ceIntegerDoubleSnapshotMap.entrySet().stream().findFirst().get().getKey().toString());
+                        Candle peCandle = getOptionCandle(peIntegerDoubleSnapshotMap.entrySet().stream().findFirst().get().getKey().toString());
+
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
                                 .builder()
                                 .ceLeg(filteredCeOptionsMap)
@@ -208,6 +220,9 @@ public class ThreePmSchedulerService {
                                 .isActive(true)
                                 .dateTime(LocalDateTime.now(ZoneId.of("Asia/Kolkata")).toString())
                                 .date(LocalDate.now().toString())
+                                .candleCe(ceCandle)
+                                .candleCe(peCandle)
+                                .volumeDiff(ceCandle.getVolume()-peCandle.getVolume())
                                 .build());
 
                     } catch (IOException e) {
@@ -217,6 +232,17 @@ public class ThreePmSchedulerService {
 
             });
         }
+    }
+
+    private Candle getOptionCandle(String instrumentToken ) throws IOException {
+        ZoneId zoneId = ZoneId.of("Asia/Kolkata");
+        String interval = getMasterUser().getInterval();
+        String timeFrom = LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String DateFrom = LocalDate.now(zoneId).toString();
+        LocalDate today = LocalDate.now(zoneId);
+        String from = DateFrom + " " + timeFrom;
+        String to = today + " " + LocalTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        return candleService.parseCandlesFromJson(historicalDataService.getHistoryDataOfInstrument(instrumentToken, from, to, interval)).get(0);
     }
 
     private static double getExecutedPrice(String jsonData) {
@@ -277,28 +303,39 @@ public class ThreePmSchedulerService {
         }
     }
 
-    private static double parseLastPrice(String optionsData) {
-        if (optionsData != null) {
-            JSONObject json = new JSONObject(optionsData);
+    private static Map<Integer, Double> parseLastPrice(String optionsData) {
+        Map<Integer, Double> resultMap = null;
+        try {
+            JSONObject jsonObject = new JSONObject(optionsData);
 
-            // Check if there is a "data" object and if it contains the expected information
-            if (json.has("data")) {
-                JSONObject data = json.getJSONObject("data");
+            // Extracting data node
+            JSONObject dataNode = jsonObject.getJSONObject("data");
 
-                // Iterate over the keys in the "data" object
-                for (String key : data.keySet()) {
-                    JSONObject instrumentData = data.getJSONObject(key);
+            // Creating a Map to store instrument_token as key and last_price as value
+            resultMap = new HashMap<>();
 
-                    // Check if the "instrument_data" object contains the "last_price" field
-                    if (instrumentData.has("last_price")) {
-                        return instrumentData.getDouble("last_price");
-                    }
-                }
+            // Iterating through the keys of the data node
+            for (String key : dataNode.keySet()) {
+                JSONObject innerNode = dataNode.getJSONObject(key);
+
+                // Extracting instrument_token and last_price values
+                int instrumentToken = innerNode.getInt("instrument_token");
+                double lastPrice = innerNode.getDouble("last_price");
+
+                // Putting values into the Map
+                resultMap.put(instrumentToken, lastPrice);
             }
+
+            // Printing the result Map
+            System.out.println("Result Map: " + resultMap);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
+
         // Handle the case when the structure is not as expected
-        return Double.NaN;
+        return resultMap;
     }
 
     private List<UserDetail> getAllUser() {
@@ -371,6 +408,13 @@ public class ThreePmSchedulerService {
             e.printStackTrace();
             return null; // Handle error appropriately in your application
         }
+    }
+
+
+    private UserDetail getMasterUser() {
+        Query query = Query.query(Criteria.where("userId").is(IJ_6185));
+        UserDetail userDetail = mongoTemplate.findOne(query, UserDetail.class);
+        return userDetail;
     }
 
 

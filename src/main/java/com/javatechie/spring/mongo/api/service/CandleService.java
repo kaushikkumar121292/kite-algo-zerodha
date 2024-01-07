@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class LatestInsideCandleService {
+public class CandleService {
 
     public List<Candle> findLatestInsideCandle(String jsonData) {
         List<Candle> candles = parseCandlesFromJson(jsonData);

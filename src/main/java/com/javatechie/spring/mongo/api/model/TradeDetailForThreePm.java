@@ -31,5 +31,8 @@ public class TradeDetailForThreePm {
     private boolean isSuccess;
     private String dateTime;
     private String date;
+    private Candle candleCe;
+    private Candle candlePe;
+    private int volumeDiff;
 
 }
