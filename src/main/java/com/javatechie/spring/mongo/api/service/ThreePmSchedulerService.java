@@ -239,7 +239,7 @@ public class ThreePmSchedulerService {
         List<TradeDetailForThreePm> unsuccessTradeListForToday = tradeDetailRepositoryThreePm.findByDateAndIsSuccessAndIsActiveAndUserId(LocalDate.now().toString(), false, false, userDetail.getUserId());
         double investedCapital = Double.parseDouble(userDetail.getQuantity()) * 160 * 2;
         double dayTarget = (investedCapital * 21) / 100;
-        double dayLossCapacity = (investedCapital * 10) / 100;
+        double dayLossCapacity = (investedCapital * 5) / 100;
         double currentProfit = successTradeListForToday.stream().count() * Double.parseDouble(userDetail.getQuantity()) * 15;
         double currentLoss = unsuccessTradeListForToday.stream().count() * Double.parseDouble(userDetail.getQuantity()) * 10;
         double netProfitOrLoss = currentProfit - currentLoss;
