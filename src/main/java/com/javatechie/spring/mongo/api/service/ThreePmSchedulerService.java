@@ -196,14 +196,14 @@ public class ThreePmSchedulerService {
                         }
 
 
-                        String ceOptionsDataForSnapshot = fetchOptionsData(INSTRUMENT_EXCHANGE, filteredCeOptionsMap.entrySet().stream().findFirst().get().getKey(), masterEncryptedToken);
+                        /*String ceOptionsDataForSnapshot = fetchOptionsData(INSTRUMENT_EXCHANGE, filteredCeOptionsMap.entrySet().stream().findFirst().get().getKey(), masterEncryptedToken);
                         Map<Integer, Double> ceIntegerDoubleSnapshotMap = parseLastPrice(ceOptionsDataForSnapshot);
                         String peOptionsDataForSnapshot = fetchOptionsData(INSTRUMENT_EXCHANGE, filteredPeOptionsMap.entrySet().stream().findFirst().get().getKey(), masterEncryptedToken);
                         Map<Integer, Double> peIntegerDoubleSnapshotMap = parseLastPrice(peOptionsDataForSnapshot);
 
 
                         Candle ceCandle = getOptionCandle(ceIntegerDoubleSnapshotMap.entrySet().stream().findFirst().get().getKey().toString());
-                        Candle peCandle = getOptionCandle(peIntegerDoubleSnapshotMap.entrySet().stream().findFirst().get().getKey().toString());
+                        Candle peCandle = getOptionCandle(peIntegerDoubleSnapshotMap.entrySet().stream().findFirst().get().getKey().toString());*/
 
                         tradeDetailRepositoryThreePm.save(TradeDetailForThreePm
                                 .builder()
@@ -220,9 +220,9 @@ public class ThreePmSchedulerService {
                                 .isActive(true)
                                 .dateTime(LocalDateTime.now(ZoneId.of("Asia/Kolkata")).toString())
                                 .date(LocalDate.now().toString())
-                                .candleCe(ceCandle)
+                                /*.candleCe(ceCandle)
                                 .candleCe(peCandle)
-                                .volumeDiff(ceCandle.getVolume()-peCandle.getVolume())
+                                .volumeDiff(ceCandle.getVolume()-peCandle.getVolume())*/
                                 .build());
 
                     } catch (IOException e) {
