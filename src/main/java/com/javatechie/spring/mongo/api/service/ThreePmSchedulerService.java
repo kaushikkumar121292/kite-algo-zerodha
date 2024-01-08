@@ -181,9 +181,11 @@ public class ThreePmSchedulerService {
                     try {
                         stopTradingException(userDetail);
 
-                        String jsonDataForCeLeg = getOrderDetails(orderService.placeOrder(orderRequests.get(0), userDetail), masterEncryptedToken);
+                        String jsonDataForCeLeg = getOrderDetails(orderService.placeOrder(orderRequests.get(0), userDetail), userDetail.getEncryptedToken());
 
-                        String jsonDataForPeLeg =getOrderDetails(orderService.placeOrder(orderRequests.get(1), userDetail), masterEncryptedToken);
+                        String jsonDataForPeLeg =getOrderDetails(orderService.placeOrder(orderRequests.get(1), userDetail), userDetail.getEncryptedToken());
+
+                        Thread.sleep(1000);
 
                         if(getExecutedPrice(jsonDataForCeLeg) != 0.0 && getExecutedPrice(jsonDataForPeLeg) != 0.0){
 
@@ -211,6 +213,8 @@ public class ThreePmSchedulerService {
                                 .build());
 
                     } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
